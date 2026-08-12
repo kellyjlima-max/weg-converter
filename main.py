@@ -237,7 +237,45 @@ Concorrentes: Schneider RM | ABB CR-P | Siemens 3RP | Phoenix Contact
 - Relés de falta de fase / desequilíbrio: linha RFW
 - Relés de proteção de motor: linha RPM
 
-### G. PROTETORES DE SURTO (SPDs)
+### G. CHAVES DE PARTIDA DIRETA — SOLUÇÃO COMPLETA EM CAIXA (DOL Starters)
+Concorrentes: **Altronic 3PDA** | Siemens 3RA2 | Schneider TeSys starter assemblies | ABB starters in enclosures
+
+ATENÇÃO: São SOLUÇÕES COMPLETAS em caixa metálica (não componentes separados).
+Incluem: contator + relé de sobrecarga + botoeira liga/desliga + chave seccionadora.
+NÃO sugerir MPW + CWM separados — indicar WEG PDW.
+
+Parâmetros críticos (extrair de código ou descrição):
+- Potência do motor (CV/HP)
+- Tensão de alimentação (220V ou 380V)
+- Monofásica ou trifásica
+- Corrente de ajuste do relé de sobrecarga (ex: 12–18A)
+- Com ou sem botoeira (sufixo "C/ BOT.")
+- Contato de contorno (CONT): indica que há contato auxiliar para sinalização
+
+**WEG – linha PDW (Partida Direta WEG)**:
+- PDW-05: chave compacta, relé de sobrecarga ajustável por faixas de corrente
+- Formato de referência WEG: `PDW-05 <potência>CV-V<variante> <faixa>A <tensão>V`
+- Exemplo confirmado: `PDW-05 15CV-V40 22-32A 380V` = código WEG 13339232
+- Disponível em 220V e 380V, monofásico e trifásico
+
+**Conversão Altronic 3PDA → WEG PDW**:
+| Siemens (descrição)                | WEG PDW equivalente estimado        |
+|------------------------------------|--------------------------------------|
+| MONO 220V 0,75/1CV, 7-10A         | PDW-05 1CV-V10 7-10A 220V           |
+| MONO 220V 1,5/2CV, 9-13A          | PDW-05 2CV-V13 9-13A 220V           |
+| MONO 220V 3CV, 12-18A             | PDW-05 3CV-V18 12-18A 220V          |
+| MONO 220V 7,5CV, 36-45A           | PDW-05 7,5CV-V40 36-45A 220V        |
+| TRIF 380V 1/1,5CV, 1,6-2,5A       | PDW-05 1,5CV-V02 1,6-2,5A 380V     |
+| TRIF 380V 4/5CV, 7-10A            | PDW-05 5CV-V10 7-10A 380V           |
+| TRIF 380V 7,5CV, 12-18A           | PDW-05 7,5CV-V18 12-18A 380V       |
+| TRIF 380V 10CV, 12-18A            | PDW-05 10CV-V18 12-18A 380V        |
+| TRIF 380V 12,5/15CV, 17-25A       | PDW-05 15CV-V25 17-25A 380V        |
+
+⚠️ Códigos WAU exatos da linha PDW não estão disponíveis nesta base (exceto 13339232).
+Informar referência estimada no campo referencia_weg e solicitar confirmação de código com THP/WEG.
+Status deve ser "parcial" até confirmação do código WAU.
+
+### H. PROTETORES DE SURTO (SPDs)
 - Usar tabela de equivalência da base de dados acima como prioridade
 - Para itens não listados: casar por tensão (Un), corrente máxima (Imax/kA), classe (I, II, III, I/II), tecnologia (varistor MOV, ECG)
 - WEG: SPW03 (CA classe II), SPW13 (CC/fotovoltaica)
@@ -250,13 +288,14 @@ Concorrentes: Schneider RM | ABB CR-P | Siemens 3RP | Phoenix Contact
 ==========================================================================
 ## IDENTIFICAÇÃO DE FABRICANTE POR CÓDIGO
 
-- Siemens: 3RT, 3RV, 3RU, 3RP, 3SB, SINAMICS (G120, S120), 6SL, 6ES, 6GK
+- Siemens: 3RT, 3RV, 3RU, 3RP, 3SB, SINAMICS (G120, S120), 6SL, 6ES, 6GK, 3RA2 (combinações partida direta)
 - ABB: AF, A (A9..A300), MS, TA, ACS, ACH, ACS355/550/880, S200, SH200
 - Schneider: LC1, LC2, LRD, GV2, GV3, ATV, ATS, NSX, CVS, RH, RM, LX, XB
 - Eaton (Moeller): DILM, DILK, ZB, PKZM, PKM, NZM, DS7
 - Danfoss: FC51, FC102, FC202, FC301, FC302, VLT
 - Rockwell / Allen-Bradley: 100-C, 140M, 509, 520, 525, 755, 22B, 25B
 - Lovato: BF, BG, BX, RGK
+- Altronic: 3PDA (chaves de partida direta em caixa metálica — prefixo 3PDA + números de potência/tensão + sufixo B=com botoeira)
 - WEG antigo: WSW, WEG-CFW (linha antiga)
 
 ==========================================================================
