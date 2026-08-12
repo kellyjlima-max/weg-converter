@@ -122,6 +122,282 @@ Família WCAM. 4 portas PoE+, 2 Uplink, 65 W total, até 30 W/porta.
 | 11402917     | SPWCM275-12         | 17568879   | SPW03-275-12-M      |
 | 11402916     | SPWCM275-20         | 17568880   | SPW03-275-20-M      |
 | 11402915     | SPWCM275-45         | 17568882   | SPW03-275-45-M      |
+
+## Seção 4 – Capacitores e Correção do Fator de Potência (Lista 07/2026)
+### Convenção de tensões nos códigos de capacitores WEG
+V25=220V | V40=380V | V49=440V | V53=480V | V57=535V | V63=660V | V103=600V
+
+### PFW03 – Controlador Automático do Fator de Potência (50/60 Hz)
+| Referência  | Tipo       | Estágios | Código   | Preço (R$)  |
+|-------------|------------|----------|----------|-------------|
+| PFW03-M08   | Monofásico | 8        | 14387138 | 7.763,64    |
+| PFW03-M12   | Monofásico | 12       | 14387141 | 8.829,11    |
+| PFW03-M24   | Monofásico | 24       | 14387143 | 10.855,43   |
+| PFW03-T12   | Trifásico  | 12       | 14387080 | 12.021,08   |
+| PFW03-T24   | Trifásico  | 24       | 14387086 | 14.398,90   |
+
+### PFW01 – Controlador Automático do Fator de Potência
+| Referência    | Tipo       | Hz | Estágios | Código   | Preço (R$) |
+|---------------|------------|----|----------|----------|------------|
+| PFW01-M06     | Monofásico | 60 | 6        | 11335175 | 8.928,16   |
+| PFW01-M06-50  | Monofásico | 50 | 6        | 12240101 | 8.928,16   |
+| PFW01-M12     | Monofásico | 60 | 12       | 11335221 | 10.153,45  |
+| PFW01-M12-50  | Monofásico | 50 | 12       | 12240107 | 10.153,45  |
+| PFW01-T06     | Trifásico  | 60 | 6        | 11335223 | 13.824,23  |
+| PFW01-T06-50  | Trifásico  | 50 | 6        | 12240102 | 13.824,23  |
+| PFW01-T12     | Trifásico  | 60 | 12       | 11335176 | 14.546,85  |
+| PFW01-T12-50  | Trifásico  | 50 | 12       | 12240168 | 14.546,85  |
+
+### PFWD01 – Controlador Dinâmico do Fator de Potência
+| Referência     | Tensão alim.     | Tensão medição | Código   | Preço (R$) |
+|----------------|------------------|----------------|----------|------------|
+| PFWD01-M12-D34 | 400 Vca          | 400 Vca        | 17633710 | 21.680,59  |
+| PFWD01-M12-D24 | 230 Vca          | 100–690 Vca    | 18565724 | 20.428,92  |
+
+### CTSW – Chave Tiristorizada para Manobra de Capacitores
+| Referência     | Tensão | Corrente nom.(A) | kVAr ref. | Código   | Preço (R$) |
+|----------------|--------|------------------|-----------|----------|------------|
+| CTSW15D23-C03  | 220V   | 39               | 15 kVAr   | 18569128 | 11.772,51  |
+| CTSW25D23-C03  | 220V   | 66               | 25 kVAr   | 18569129 | 12.989,34  |
+| CTSW50D23-C03  | 220V   | 131              | 50 kVAr   | 18569130 | 14.359,27  |
+| CTSW15D34-C03  | 380V   | 22               | 8–15 kVAr | 17139329 | 15.398,11  |
+| CTSW25D34-C03  | 380V   | 36               | 14–25 kVAr| 17139330 | 22.174,58  |
+| CTSW50D34-C03  | 380V   | 72               | 28–50 kVAr| 17139331 | 23.763,56  |
+| CTSW15D36-C03  | 400V   | 20               | 8–15 kVAr | 18571517 | 17.069,82  |
+| CTSW25D36-C03  | 400V   | 33               | 13–25 kVAr| 18571679 | 20.503,98  |
+| CTSW50D36-C03  | 400V   | 66               | 25–50 kVAr| 18571680 | 24.791,41  |
+| CTSW15D39-C02  | 480V   | 18               | 7–15 kVAr | 17139332 | 11.180,46  |
+| CTSW25D39-C02  | 480V   | 30               | 11–25 kVAr| 17139334 | 12.336,19  |
+| CTSW50D39-C02  | 480V   | 60               | 23–50 kVAr| 17139335 | 13.910,09  |
+| CTSW15D48-C02  | 690V   | 13               | 5–10 kVAr | 17139337 | 14.623,81  |
+| CTSW25D48-C02  | 690V   | 21               | 8–25 kVAr | 17139479 | 16.033,19  |
+| CTSW50D48-C02  | 690V   | 42               | 16–50 kVAr| 17139480 | 17.723,39  |
+
+### AHFW – Filtro Ativo para Correção de Fator de Potência (seleção)
+| Referência    | Instalação | Tensão/Hz   | Corrente (A) | Código   | Preço (R$) |
+|---------------|------------|-------------|--------------|----------|------------|
+| AHFW 50V40 R  | Rack       | 440V / 60Hz | 50           | 17915874 | 90.000,00  |
+| AHFW 100V40 R | Rack       | 440V / 60Hz | 100          | 18049907 | 100.114,17 |
+| AHFW 150V40 R | Rack       | 440V / 60Hz | 150          | 18255105 | 93.731,08  |
+| AHFW 50V53 R  | Rack       | 480V / 60Hz | 50           | 17916109 | 103.809,72 |
+| AHFW 100V53 R | Rack       | 480V / 60Hz | 100          | 18050410 | 134.381,53 |
+| AHFW 150V53 R | Rack       | 480V / 60Hz | 150          | 18255107 | 145.041,58 |
+| AHFW 50V63 R  | Rack       | 690V / 60Hz | 50           | 18255494 | 147.819,61 |
+| AHFW 100V63 R | Rack       | 690V / 60Hz | 100          | 18255492 | 157.898,26 |
+| AHFW 50V52 R  | Rack       | 480V / 50Hz | 50           | 18748363 | 154.732,57 |
+| AHFW 100V52 R | Rack       | 480V / 50Hz | 100          | 18748366 | 165.392,63 |
+| AHFW 50V40 P  | Parede     | 440V / 60Hz | 50           | 17915876 | 179.283,04 |
+| AHFW 100V40 P | Parede     | 440V / 60Hz | 100          | 18050408 | 176.052,76 |
+| AHFW 150V40 P | Parede     | 440V / 60Hz | 150          | 18255106 | 206.740,78 |
+| AHFW 50V53 P  | Parede     | 480V / 60Hz | 50           | 17916112 | 167.976,91 |
+| AHFW 100V53 P | Parede     | 480V / 60Hz | 100          | 18050412 | 93.731,08  |
+| AHFW 50V52 P  | Parede     | 480V / 50Hz | 50           | 18748365 | 100.114,17 |
+| AHFW 100V52 P | Parede     | 480V / 50Hz | 100          | 18748538 | 93.731,08  |
+
+### UCW – Unidade Capacitiva Monofásica (seleção 220V / 380V / 440V / 480V)
+| Referência      | Tensão | kVAr  | Código   | Preço (R$) |
+|-----------------|--------|-------|----------|------------|
+| UCW0,83V25 J4   | 220V   | 0,83  | 11488457 | 338,38     |
+| UCW1,67V25 L6   | 220V   | 1,67  | 10045802 | 365,95     |
+| UCW2,5V25 L10   | 220V   | 2,50  | 10045950 | 429,83     |
+| UCW3,33V25 L10  | 220V   | 3,33  | 10046652 | 547,37     |
+| UCW5V25 N14     | 220V   | 5,00  | 11449885 | 1.084,93   |
+| UCW6,67V25 N14  | 220V   | 6,67  | 11507565 | 1.189,92   |
+| UCW0,83V40 J2   | 380V   | 0,83  | 11488508 | 293,99     |
+| UCW1,67V40 J4   | 380V   | 1,67  | 11488510 | 305,06     |
+| UCW2,5V40 J6    | 380V   | 2,50  | 13497628 | 321,54     |
+| UCW3,33V40 J8   | 380V   | 3,33  | 11488809 | 409,50     |
+| UCW5V40 L10     | 380V   | 5,00  | 10045951 | 492,28     |
+| UCW6,67V40 M10  | 380V   | 6,67  | 10630797 | 708,63     |
+| UCW7,5V40 N14   | 380V   | 7,50  | 11449886 | 1.084,93   |
+| UCW8,33V40 N14  | 380V   | 8,33  | 11449950 | 1.123,18   |
+| UCW9,17V40 N14  | 380V   | 9,17  | 11449951 | 1.137,15   |
+| UCW10V40 N14    | 380V   | 10,00 | 11449887 | 1.189,92   |
+| UCW0,83V49 J2   | 440V   | 0,83  | 11488824 | 293,99     |
+| UCW1,67V49 J4   | 440V   | 1,67  | 11488825 | 305,06     |
+| UCW2,5V49 J6    | 440V   | 2,50  | 13497629 | 321,54     |
+| UCW3,33V49 J8   | 440V   | 3,33  | 11488827 | 382,40     |
+| UCW5V49 L10     | 440V   | 5,00  | 10186125 | 492,28     |
+| UCW6,67V49 M10  | 440V   | 6,67  | 10630798 | 708,63     |
+| UCW7,5V49 N14   | 440V   | 7,50  | 11449911 | 1.084,93   |
+| UCW8,33V49 N14  | 440V   | 8,33  | 11449952 | 1.123,18   |
+| UCW9,17V49 N14  | 440V   | 9,17  | 11449953 | 1.137,15   |
+| UCW10V49 N14    | 440V   | 10,00 | 11449915 | 1.189,92   |
+| UCW0,83V53 J2   | 480V   | 0,83  | 11488839 | 305,06     |
+| UCW2,5V53 J6    | 480V   | 2,50  | 13497630 | 332,97     |
+| UCW5V53 L10     | 480V   | 5,00  | 10045952 | 508,93     |
+| UCW6,67V53 M10  | 480V   | 6,67  | 10630800 | 732,70     |
+| UCW7,5V53 N14   | 480V   | 7,50  | 11449916 | 1.084,93   |
+| UCW10V53 N14    | 480V   | 10,00 | 11449928 | 1.189,92   |
+
+### UCWT – Unidade Capacitiva Trifásica HD (seleção 220V / 380V / 440V / 480V)
+| Referência         | Tensão | kVAr  | Código   | Preço (R$) |
+|--------------------|--------|-------|----------|------------|
+| UCWT5V25 N20 HD    | 220V   | 5,0   | 11313760 | 980,11     |
+| UCWT7,5V25 N22 HD  | 220V   | 7,5   | 11313783 | 1.135,41   |
+| UCWT10V25 N22 HD   | 220V   | 10,0  | 11313782 | 1.670,72   |
+| UCWT15V25 S26 HD   | 220V   | 15,0  | 11914853 | 2.261,16   |
+| UCWT20V25 S28 HD   | 220V   | 20,0  | 12271626 | 3.327,67   |
+| UCWT25V25 U28 HD   | 220V   | 25,0  | 13365111 | 4.003,79   |
+| UCWT30V25 U28 HD   | 220V   | 30,0  | 13365631 | 4.296,20   |
+| UCWT0,5V40 L10 HD  | 380V   | 0,5   | 10046005 | 357,76     |
+| UCWT1V40 L10 HD    | 380V   | 1,0   | 10046007 | 375,95     |
+| UCWT2V40 L10 HD    | 380V   | 2,0   | 10046009 | 475,93     |
+| UCWT3V40 L10 HD    | 380V   | 3,0   | 10046011 | 560,60     |
+| UCWT5V40 L16 HD    | 380V   | 5,0   | 10046012 | 694,53     |
+| UCWT7,5V40 N20 HD  | 380V   | 7,5   | 11313784 | 919,58     |
+| UCWT10V40 N20 HD   | 380V   | 10,0  | 11313787 | 1.077,14   |
+| UCWT12,5V40 N22 HD | 380V   | 12,5  | 11313820 | 1.162,09   |
+| UCWT15V40 N22 HD   | 380V   | 15,0  | 11313821 | 1.495,53   |
+| UCWT17,5V40 Q26 HD | 380V   | 17,5  | 11916880 | 1.976,96   |
+| UCWT20V40 Q26 HD   | 380V   | 20,0  | 11916901 | 2.146,58   |
+| UCWT25V40 S26 HD   | 380V   | 25,0  | 11916924 | 2.301,51   |
+| UCWT30V40 S28 HD   | 380V   | 30,0  | 12272719 | 2.991,02   |
+| UCWT35V40 S28 HD   | 380V   | 35,0  | 12267042 | 3.387,10   |
+| UCWT40V40 U28 HD   | 380V   | 40,0  | 13365634 | 4.078,51   |
+| UCWT45V40 U28 HD   | 380V   | 45,0  | 13365636 | 4.204,72   |
+| UCWT50V40 U28 HD   | 380V   | 50,0  | 13365637 | 4.372,89   |
+| UCWT0,5V49 L10 HD  | 440V   | 0,5   | 10046013 | 368,85     |
+| UCWT1V49 L10 HD    | 440V   | 1,0   | 10046015 | 391,87     |
+| UCWT2V49 L10 HD    | 440V   | 2,0   | 10046017 | 501,65     |
+| UCWT3V49 L10 HD    | 440V   | 3,0   | 10046019 | 590,90     |
+| UCWT5V49 L16 HD    | 440V   | 5,0   | 10046020 | 749,41     |
+| UCWT7,5V49 N20 HD  | 440V   | 7,5   | 11313663 | 968,17     |
+| UCWT10V49 N20 HD   | 440V   | 10,0  | 11758279 | 1.110,56   |
+| UCWT12,5V49 N22 HD | 440V   | 12,5  | 11313665 | 1.211,14   |
+| UCWT15V49 N22 HD   | 440V   | 15,0  | 11314666 | 1.548,36   |
+| UCWT20V49 Q26 HD   | 440V   | 20,0  | 11917007 | 2.215,44   |
+| UCWT25V49 S26 HD   | 440V   | 25,0  | 11917021 | 2.350,69   |
+| UCWT30V49 S28 HD   | 440V   | 30,0  | 12272780 | 3.096,76   |
+| UCWT35V49 S28 HD   | 440V   | 35,0  | 12272784 | 3.449,48   |
+| UCWT40V49 U28 HD   | 440V   | 40,0  | 13365671 | 4.209,36   |
+| UCWT45V49 U28 HD   | 440V   | 45,0  | 13365672 | 4.351,24   |
+| UCWT50V49 U28 HD   | 440V   | 50,0  | 13365673 | 4.466,23   |
+| UCWT5V53 L16 HD    | 480V   | 5,0   | 10045997 | 817,60     |
+| UCWT7,5V53 N20 HD  | 480V   | 7,5   | 11314667 | 1.277,09   |
+| UCWT10V53 N20 HD   | 480V   | 10,0  | 11314728 | 1.368,57   |
+| UCWT15V53 N22 HD   | 480V   | 15,0  | 11314730 | 2.215,84   |
+| UCWT20V53 Q26 HD   | 480V   | 20,0  | 11917064 | 2.736,66   |
+| UCWT25V53 S26 HD   | 480V   | 25,0  | 11917066 | 4.124,53   |
+| UCWT30V53 S28 HD   | 480V   | 30,0  | 12272781 | 4.376,31   |
+| UCWT40V53 U28 HD   | 480V   | 40,0  | 13365674 | 5.199,72   |
+| UCWT50V53 U28 HD   | 480V   | 50,0  | 13365677 | 7.836,60   |
+
+### UCWT UHD – Unidade Capacitiva Trifásica Ultra Heavy Duty (seleção)
+| Referência        | Tensão | kVAr | Código   | Preço (R$) |
+|-------------------|--------|------|----------|------------|
+| UCWT5V25 Q26 UHD  | 220V   | 5,0  | 16207509 | 1.896,53   |
+| UCWT10V25 S26 UHD | 220V   | 10,0 | 16207513 | 3.232,87   |
+| UCWT15V25 U26 UHD | 220V   | 15,0 | 16207515 | 4.375,36   |
+| UCWT5V40 N20 UHD  | 380V   | 5,0  | 16202791 | 1.343,88   |
+| UCWT10V40 Q26 UHD | 380V   | 10,0 | 16202792 | 2.084,27   |
+| UCWT15V40 S26 UHD | 380V   | 15,0 | 16202793 | 2.893,81   |
+| UCWT20V40 U26 UHD | 380V   | 20,0 | 16202794 | 4.153,61   |
+| UCWT25V40 U26 UHD | 380V   | 25,0 | 16202795 | 4.453,43   |
+| UCWT5V49 N20 UHD  | 440V   | 5,0  | 16216189 | 1.450,14   |
+| UCWT10V49 Q26 UHD | 440V   | 10,0 | 16216190 | 2.148,94   |
+| UCWT15V49 S26 UHD | 440V   | 15,0 | 16216192 | 2.996,07   |
+| UCWT20V49 U26 UHD | 440V   | 20,0 | 16216194 | 4.286,89   |
+| UCWT25V49 U26 UHD | 440V   | 25,0 | 16216196 | 4.548,58   |
+| UCWT5V53 N20 UHD  | 480V   | 5,0  | 16218131 | 1.582,05   |
+| UCWT10V53 Q26 UHD | 480V   | 10,0 | 16218132 | 2.648,19   |
+| UCWT15V53 S26 UHD | 480V   | 15,0 | 16218133 | 4.287,68   |
+| UCWT20V53 U26 UHD | 480V   | 20,0 | 16218135 | 5.295,46   |
+| UCWT25V53 U26 UHD | 480V   | 25,0 | 16218136 | 7.980,99   |
+
+### MCW – Módulo Capacitivo Trifásico (seleção 220V / 380V / 440V / 480V)
+| Referência  | Tensão | kVAr  | Código   | Preço (R$) |
+|-------------|--------|-------|----------|------------|
+| MCW2,5V25   | 220V   | 2,5   | 10045851 | 1.465,55   |
+| MCW5V25     | 220V   | 5,0   | 10045799 | 1.548,68   |
+| MCW7,5V25   | 220V   | 7,5   | 10186130 | 1.780,56   |
+| MCW10V25    | 220V   | 10,0  | 10046861 | 2.067,91   |
+| MCW15V25    | 220V   | 15,0  | 11425743 | 3.827,85   |
+| MCW20V25    | 220V   | 20,0  | 10731824 | 4.347,02   |
+| MCW25V25    | 220V   | 25,0  | 10731826 | 6.109,54   |
+| MCW30V25    | 220V   | 30,0  | 11433567 | 6.626,17   |
+| MCW2,5V40   | 380V   | 2,5   | 10452269 | 1.423,68   |
+| MCW5V40     | 380V   | 5,0   | 10186090 | 1.472,40   |
+| MCW7,5V40   | 380V   | 7,5   | 10186099 | 1.575,53   |
+| MCW10V40    | 380V   | 10,0  | 10186092 | 1.787,07   |
+| MCW15V40    | 380V   | 15,0  | 10186131 | 2.108,63   |
+| MCW17,5V40  | 380V   | 17,5  | 11433568 | 3.573,72   |
+| MCW20V40    | 380V   | 20,0  | 10073612 | 3.785,20   |
+| MCW25V40    | 380V   | 25,0  | 11363326 | 4.106,96   |
+| MCW30V40    | 380V   | 30,0  | 10214419 | 4.428,63   |
+| MCW35V40    | 380V   | 35,0  | 11433573 | 6.112,20   |
+| MCW40V40    | 380V   | 40,0  | 11433574 | 6.426,81   |
+| MCW45V40    | 380V   | 45,0  | 11433575 | 6.748,53   |
+| MCW50V40    | 380V   | 50,0  | 11433576 | 8.425,08   |
+| MCW60V40    | 380V   | 60,0  | 11433577 | 9.068,32   |
+| MCW2,5V49   | 440V   | 2,5   | 10045854 | 1.423,68   |
+| MCW5V49     | 440V   | 5,0   | 10186091 | 1.472,40   |
+| MCW10V49    | 440V   | 10,0  | 10186093 | 1.787,07   |
+| MCW15V49    | 440V   | 15,0  | 10045984 | 2.108,63   |
+| MCW20V49    | 440V   | 20,0  | 11433578 | 3.573,72   |
+| MCW25V49    | 440V   | 25,0  | 11148586 | 4.106,96   |
+| MCW30V49    | 440V   | 30,0  | 10074765 | 4.428,63   |
+| MCW2,5V53   | 480V   | 2,5   | 10045856 | 1.473,66   |
+| MCW5V53     | 480V   | 5,0   | 10045857 | 1.523,92   |
+| MCW10V53    | 480V   | 10,0  | 10186101 | 1.864,18   |
+| MCW15V53    | 480V   | 15,0  | 10045984 | 2.182,51   |
+| MCW20V53    | 480V   | 20,0  | 11433589 | 3.939,56   |
+| MCW30V53    | 480V   | 30,0  | 11088319 | 4.576,30   |
+
+### BCW – Banco de Capacitores Trifásico em Caixa (seleção)
+| Referência   | Tensão | kVAr  | Código   | Preço (R$) |
+|--------------|--------|-------|----------|------------|
+| BCW10V25 T   | 220V   | 10,0  | 14891694 | 3.796,31   |
+| BCW15V25 T   | 220V   | 15,0  | 14891695 | 5.138,23   |
+| BCW20V25 T   | 220V   | 20,0  | 14891696 | 6.589,40   |
+| BCW25V25 T   | 220V   | 25,0  | 14891697 | 7.940,81   |
+| BCW30V25 T   | 220V   | 30,0  | 14891778 | 8.938,27   |
+| BCW20V40 T   | 380V   | 20,0  | 14901141 | 4.144,47   |
+| BCW30V40 T   | 380V   | 30,0  | 14901441 | 5.637,59   |
+| BCW40V40 T   | 380V   | 40,0  | 14901774 | 7.209,97   |
+| BCW50V40 T   | 380V   | 50,0  | 14902441 | 8.736,65   |
+| BCW60V40 T   | 380V   | 60,0  | 14902644 | 9.256,64   |
+| BCW75V40 T   | 380V   | 75,0  | 14902750 | 11.066,54  |
+| BCW100V40 T  | 380V   | 100,0 | 14902788 | 12.172,65  |
+| BCW30V49 T   | 440V   | 30,0  | 14896670 | 5.637,59   |
+| BCW50V49 T   | 440V   | 50,0  | 14897034 | 8.736,65   |
+| BCW75V49 T   | 440V   | 75,0  | 14897095 | 11.066,06  |
+| BCW100V49 T  | 440V   | 100,0 | 14897172 | 12.172,65  |
+| BCW30V53 T   | 480V   | 30,0  | 14904551 | 5.902,29   |
+| BCW50V53 T   | 480V   | 50,0  | 14904555 | 8.793,00   |
+| BCW75V53 T   | 480V   | 75,0  | 14904580 | 11.197,26  |
+| BCW100V53 T  | 480V   | 100,0 | 14904580 | 12.316,99  |
+
+### BCWA – Banco Automático de Capacitores (seleção 380V / 440V / 480V)
+| Referência       | Tensão | kVAr  | Corrente (A) | Código   | Preço (R$) |
+|------------------|--------|-------|--------------|----------|------------|
+| BCWA20V40D-V25   | 380V   | 20,0  | 30,4         | 16312320 | 71.420,41  |
+| BCWA40V40D-V25   | 380V   | 40,0  | 60,8         | 16312749 | 74.991,41  |
+| BCWA50V40D-V25   | 380V   | 50,0  | 76,0         | 16312753 | 77.241,14  |
+| BCWA60V40D-V25   | 380V   | 60,0  | 91,2         | 16312756 | 81.103,20  |
+| BCWA70V40D-V25   | 380V   | 70,0  | 106,4        | 16312901 | 83.536,32  |
+| BCWA80V40D-V25   | 380V   | 80,0  | 121,5        | 16312906 | 86.042,39  |
+| BCWA90V40D-V25   | 380V   | 90,0  | 136,7        | 16313030 | 90.344,51  |
+| BCWA100V40D-V25  | 380V   | 100,0 | 151,9        | 16313037 | 93.054,86  |
+| BCWA120V40D-V25  | 380V   | 120,0 | 182,3        | 16313199 | 98.721,90  |
+| BCWA20V49D-V25   | 440V   | 20,0  | 26,2         | 16344046 | 68.585,33  |
+| BCWA40V49D-V25   | 440V   | 40,0  | 52,5         | 16344225 | 75.615,33  |
+| BCWA60V49D-V25   | 440V   | 60,0  | 78,7         | 16344250 | 81.777,98  |
+| BCWA100V49D-V25  | 440V   | 100,0 | 131,2        | 16344313 | 93.829,04  |
+| BCWA120V49D-V25  | 440V   | 120,0 | 157,5        | 16344349 | 99.543,24  |
+| BCWA20V53D-V25   | 480V   | 20,0  | 24,1         | 16348664 | 69.146,06  |
+| BCWA40V53D-V25   | 480V   | 40,0  | 48,1         | 16348667 | 76.233,53  |
+| BCWA60V53D-V25   | 480V   | 60,0  | 72,2         | 16348757 | 82.446,57  |
+| BCWA100V53D-V25  | 480V   | 100,0 | 120,3        | 16348883 | 94.596,18  |
+
+### DRW – Reator de Dessintonia (sempre fornecido em conjunto com UCWT)
+Nota: O DRW acompanha um capacitor UCWT de kVAr nominal maior. O conjunto resulta no kVAr de potência reativa indicado.
+Dessintonia 7% (frequência 226,8 Hz): série DRW7-x. Dessintonia 14% (160,4 Hz): série DRW14-x.
+Códigos de referência para conjunto DRW7 + UCWT a 380V (V40):
+- 12 kVAr: Reator DRW7-2,40V40 (12789187) + UCWT15V49 N22 HD (11314666)
+- 20 kVAr: Reator DRW7-1,44V40 (12789288) + UCWT25V49 S26 HD (11917021)
+- 28 kVAr: Reator DRW7-1,03V40 (12789290) + UCWT35V49 S28 HD (12272784)
+- 40 kVAr: Reator DRW7-0,72V40 (12789291) + UCWT50V49 U28 HD (13365673)
 """
 
 # ─── System prompt ────────────────────────────────────────────────────────────
@@ -311,6 +587,42 @@ Estes códigos SAP são confirmados — status="encontrado" quando o CV e tensã
 - Switches: casar por número de portas PoE e não-PoE, potência total PoE, velocidade (10/100/1000)
 - Usar base WAU 14/2026 e 15/2026
 
+### J. CAPACITORES E CORREÇÃO DO FATOR DE POTÊNCIA
+**ATENÇÃO: WEG FABRICA linha completa de capacitores. NUNCA retornar "não encontrado" sem primeiro tentar casar por kVAr e tensão na base acima.**
+
+Famílias WEG e quando usar cada uma:
+- **UCW** (Unidade Capacitiva Monofásica): capacitor individual monofásico. Identificar: kVAr + tensão (220/380/440/480/535V). Código: UCW{kVAr}V{tensão} + sufixo tamanho.
+- **UCWT HD** (Unidade Capacitiva Trifásica): capacitor individual trifásico padrão. Usar para maioria dos itens de capacitor trifásico. Código: UCWT{kVAr}V{tensão} L/N/Q/S/U HD.
+- **UCWT UHD** (Ultra Heavy Duty): versão reforçada do UCWT, para uso com chaves tiristorizadas ou harmônicos elevados.
+- **MCW** (Módulo Capacitivo Trifásico): banco pré-montado com UCWs integradas. Mais compacto e prático que UCWT isolado. Usar quando cliente pede "banco modular" ou "módulo capacitivo".
+- **BCW** (Banco de Capacitores Trifásico em caixa): banco fechado com caixa metálica. Usar para instalações simples.
+- **BCWP-D** (Banco com Disjuntor): BCW com disjuntor integrado.
+- **BCWA** (Banco Automático): banco com controlador automático integrado (PFW03). Usar quando cliente pede "banco automático de capacitores" completo.
+- **PFW03/PFW01**: controladores automáticos de fator de potência separados. PFW03=50/60Hz universal, PFW01=60Hz ou 50Hz específico.
+- **PFWD01**: controlador dinâmico (para cargas variáveis rápidas, thyristor output).
+- **CTSW**: chave tiristorizada para manobra de capacitores sem contator. Substitui Epcos/TDK PhaseCap switch, Nokian NKKTS, FRAKO KM.
+- **AHFW**: filtro ativo para correção de FP e harmônicos. Substitui ABB PQF, Schneider AccuSine, Siemens SiCap.
+- **DRW**: reator de dessintonia, sempre em conjunto com UCWT. Necessário quando há harmônicos na rede (redes com drives/inversores).
+
+Parâmetros críticos para matching de capacitores:
+1. **kVAr** (potência reativa): critério primário. Casar exatamente ou imediatamente acima.
+2. **Tensão nominal** (V): 220V=V25 | 380V=V40 | 440V=V49 | 480V=V53 | 535V=V57 | 660V=V63 | 600V=V103
+3. **Fases**: monofásico → UCW; trifásico → UCWT ou MCW
+4. **Tipo de produto**: capacitor avulso (UCWT), banco (BCW/MCW), automático (BCWA), controlador (PFW), chave (CTSW), filtro ativo (AHFW)
+
+Concorrentes mais comuns de capacitores:
+- **ABB**: CLMD (trifásico), CLMB (monofásico), PQF (filtro ativo)
+- **Schneider/Capacitor Industries**: Varplus Can, Vlarpluselec, AccuSine (filtro ativo)
+- **Epcos / TDK**: MKV, B32 (monofásico), PhaseCap HD (trifásico), PhaseCap Speed (com chave tiristorizada)
+- **Nokian**: NKK, NKKT (trifásico), NKKTS (chave tiristorizada)
+- **FRAKO**: EM, KM (chave), LM, PM
+- **Ducati / Icar / Comar**: CPT, MKP, capacitores italianos
+- **Controladores concorrentes**: ABB RVT, Schneider Varplus Box, Lovato DCRG, Selec, Ducati MC
+
+Regra de matching por item de texto livre (ex: "Capacitor 16,24 kvar 380 volts"):
+→ 16,24 kVAr trifásico 380V → buscar UCWT mais próximo acima: **UCWT17,5V40 Q26 HD (11916880)** com observação "⚠ Kvar WEG imediatamente superior: 17,5 kVAr — confirmar com cliente"
+Regra: se kVAr exato não existe, usar UCWT imediatamente acima e registrar no campo "observacao".
+
 ==========================================================================
 ## IDENTIFICAÇÃO DE FABRICANTE POR CÓDIGO
 
@@ -323,6 +635,13 @@ Estes códigos SAP são confirmados — status="encontrado" quando o CV e tensã
 - Lovato: BF, BG, BX, RGK
 - Altronic: 3PDA (chaves de partida direta em caixa metálica — prefixo 3PDA + números de potência/tensão + sufixo B=com botoeira)
 - WEG antigo: WSW, WEG-CFW (linha antiga)
+- Capacitores — Epcos/TDK: B3232, MKV, PhaseCap, B32K (capacitores de potência)
+- Capacitores — Nokian: NKK, NKKT, NKKF, NKKTS (chave tiristorizada)
+- Capacitores — ABB: CLMD, CLMB, RVT (controlador)
+- Capacitores — FRAKO: EM, KM, LM, PM
+- Capacitores — Icar / Ducati / Comar / Elco: CPT, MKP (italianos)
+- Capacitores — Schneider: Varplus Can, Vlarpluselec
+- Controladores de FP — ABB: RVT | Schneider: Varplus Box | Lovato: DCRG | Selec: PFCR
 
 ==========================================================================
 ## FORMATO DE RESPOSTA — RETORNE APENAS JSON VÁLIDO, SEM TEXTO EXTRA:
