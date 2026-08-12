@@ -15,6 +15,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 # ─── App ─────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Conversor de Códigos WEG – THP")
@@ -712,6 +713,20 @@ async def convert(file: UploadFile = File(...)):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Erro ao processar: {exc}") from exc
 
+    return JSONResponse(content=result)
+
+class TextInput(BaseModel):
+    texto: str
+
+@app.post("/api/convert-text")
+async def convert_text_endpoint(body: TextInput):
+    """Converte lista de produtos a partir de texto livre (mensagem WhatsApp, e-mail, etc.)."""
+    if not body.texto.strip():
+        raise HTTPException(status_code=400, detail="Texto vazio. Cole a mensagem e tente novamente.")
+    try:
+        result = call_claude_text(body.texto.strip(), "mensagem WhatsApp / texto livre")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Erro ao processar: {exc}") from exc
     return JSONResponse(content=result)
 
 @app.post("/api/export")

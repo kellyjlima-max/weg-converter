@@ -280,6 +280,59 @@
       color: var(--warn);
     }
 
+    /* ── Tabs ──────────────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      margin-bottom: 22px;
+      border-bottom: 2px solid var(--border);
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn:hover { color: var(--blue); }
+    .tab-btn.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+    }
+
+    /* ── Textarea panel ────────────────────────────────── */
+    #panelMensagem { display: none; }
+    .msg-textarea {
+      width: 100%;
+      min-height: 200px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      resize: vertical;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .msg-textarea:focus { border-color: var(--blue); }
+    .msg-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      margin-bottom: 16px;
+    }
+    .msg-hint strong { color: var(--blue); }
+
     /* ── Responsive ────────────────────────────────────── */
     @media (max-width: 600px) {
       header { padding: 0 16px; }
@@ -306,7 +359,7 @@
       <p>THP Representações</p>
     </div>
   </div>
-  <span class="version">v1.0</span>
+  <span class="version">v1.1</span>
 </header>
 
 <!-- ── Main ───────────────────────────────────────────── -->
@@ -315,6 +368,15 @@
   <!-- Upload card -->
   <div class="card" id="uploadCard">
     <div class="card-title">📋 Enviar lista do cliente</div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabArquivo" onclick="switchTab('arquivo')">📁 Arquivo</button>
+      <button class="tab-btn" id="tabMensagem" onclick="switchTab('mensagem')">💬 Colar mensagem</button>
+    </div>
+
+    <!-- Painel: arquivo -->
+    <div id="panelArquivo">
 
     <div class="drop-zone" id="dropZone">
       <input type="file" id="fileInput"
@@ -344,6 +406,20 @@
     <button class="btn btn-primary" id="convertBtn" onclick="startConversion()" style="display:none; margin-top:18px; width:100%; justify-content:center; padding:13px; font-size:15px;">
       ⚡ Converter para WEG
     </button>
+
+    </div><!-- /panelArquivo -->
+
+    <!-- Painel: mensagem WhatsApp -->
+    <div id="panelMensagem">
+      <textarea class="msg-textarea" id="msgInput"
+        placeholder="Cole aqui a mensagem recebida (WhatsApp, e-mail, etc.)&#10;&#10;Exemplo:&#10;02 Capacitor 16.24 kvar 380 volts&#10;01 Contator ABB AF40-30-00 220V&#10;03 Disjuntor Siemens 3RV2011 10A"></textarea>
+      <p class="msg-hint">Cole a mensagem como recebida — pode incluir saudações e textos misturados. <strong>O sistema extrai os produtos automaticamente.</strong></p>
+      <button class="btn btn-primary" id="convertMsgBtn" onclick="startConversionText()"
+        style="width:100%; justify-content:center; padding:13px; font-size:15px;">
+        ⚡ Converter mensagem para WEG
+      </button>
+    </div><!-- /panelMensagem -->
+
   </div>
 
   <!-- Loading card -->
@@ -398,6 +474,7 @@
 /* ── State ────────────────────────────────────────────── */
 let selectedFile = null;
 let conversionData = null;
+let activeTab = 'arquivo';
 
 /* ── DOM refs ─────────────────────────────────────────── */
 const dropZone    = document.getElementById('dropZone');
@@ -411,6 +488,16 @@ const errorAlert  = document.getElementById('errorAlert');
 const uploadCard  = document.getElementById('uploadCard');
 const loadSection = document.getElementById('loadingSection');
 const resultsSect = document.getElementById('resultsSection');
+
+/* ── Tab switching ────────────────────────────────────── */
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tabArquivo').classList.toggle('active', tab === 'arquivo');
+  document.getElementById('tabMensagem').classList.toggle('active', tab === 'mensagem');
+  document.getElementById('panelArquivo').style.display = tab === 'arquivo' ? 'block' : 'none';
+  document.getElementById('panelMensagem').style.display = tab === 'mensagem' ? 'block' : 'none';
+  hideError();
+}
 
 /* ── File selection ───────────────────────────────────── */
 fileInput.addEventListener('change', e => {
@@ -469,6 +556,35 @@ async function startConversion() {
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: 'Erro desconhecido.' }));
       throw new Error(err.detail || 'Erro ao processar arquivo.');
+    }
+    conversionData = await res.json();
+    showResults(conversionData);
+  } catch (ex) {
+    hideLoading();
+    showError(ex.message || 'Erro inesperado. Tente novamente.');
+  }
+}
+
+/* ── Conversion from text (WhatsApp) ─────────────────── */
+async function startConversionText() {
+  const texto = document.getElementById('msgInput').value.trim();
+  if (!texto) {
+    showError('Cole uma mensagem antes de converter.');
+    return;
+  }
+
+  showLoading('💬 Lendo mensagem...', 'A IA está identificando os produtos e buscando equivalências WEG.');
+  hideError();
+
+  try {
+    const res = await fetch('/api/convert-text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Erro desconhecido.' }));
+      throw new Error(err.detail || 'Erro ao processar mensagem.');
     }
     conversionData = await res.json();
     showResults(conversionData);
@@ -598,11 +714,13 @@ function resetApp() {
   selectedFile = null;
   conversionData = null;
   fileInput.value = '';
-  fileBar.style.display  = 'none';
+  fileBar.style.display    = 'none';
   convertBtn.style.display = 'none';
   uploadCard.style.display  = 'block';
   loadSection.style.display = 'none';
   resultsSect.style.display = 'none';
+  // Restaura a aba que estava ativa antes da conversão
+  switchTab(activeTab);
   hideError();
 }
 
