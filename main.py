@@ -242,45 +242,70 @@ Concorrentes: **Altronic 3PDA** | Siemens 3RA2 | Schneider TeSys starter assembl
 
 ATENÇÃO: São SOLUÇÕES COMPLETAS em caixa metálica (não componentes separados).
 Incluem: contator + relé de sobrecarga + botoeira liga/desliga + chave seccionadora.
-NÃO sugerir MPW + CWM separados — indicar WEG PDW.
+NÃO sugerir MPW + CWM separados — indicar WEG PDW ou PDWM conforme tensão/fase.
 
 Parâmetros críticos (extrair de código ou descrição):
 - Potência do motor (CV/HP)
-- Tensão de alimentação (220V ou 380V)
-- Monofásica ou trifásica
+- Tensão de alimentação (220V monofásica → PDWM | 380V trifásica → PDW)
 - Corrente de ajuste do relé de sobrecarga (ex: 12–18A)
-- Com ou sem botoeira (sufixo "C/ BOT.")
-- Contato de contorno (CONT): indica que há contato auxiliar para sinalização
+- Com ou sem botoeira (sufixo "C/ BOT." ou "B")
+- Contato de contorno (CONT): contato auxiliar para sinalização
 
-**WEG – linha PDW (Partida Direta WEG)**:
-- PDW-05: chave compacta, relé de sobrecarga ajustável por faixas de corrente
-- Formato de referência WEG: `PDW-05 <potência>CV-V<variante> <faixa>A <tensão>V`
-- Exemplo confirmado: `PDW-05 15CV-V40 22-32A 380V` = código WEG 13339232
-- Disponível em 220V e 380V, monofásico e trifásico
+**LÓGICA DE MATCHING — SIGA ESTA ORDEM:**
+1. **Potência (CV) + tensão são critérios primários.** Encontre o WEG com o mesmo CV e mesma tensão.
+2. **Faixa do relé pode diferir** entre fabricantes — é normal. Selecione o WEG de mesmo CV e anote a diferença na observação: "⚠ Faixa WEG: X-Y A — confirmar ajuste com cliente."
+3. **Só escale para CV maior** se o WEG de mesma potência genuinamente não cobre a corrente nominal do motor (faixa máxima menor que a corrente nominal informada). Nesse caso marque como alerta e explique.
 
-**Conversão Altronic 3PDA → WEG PDW**:
-| Siemens (descrição)                | WEG PDW equivalente estimado        |
-|------------------------------------|--------------------------------------|
-| MONO 220V 0,75/1CV, 7-10A         | PDW-05 1CV-V10 7-10A 220V           |
-| MONO 220V 1,5/2CV, 9-13A          | PDW-05 2CV-V13 9-13A 220V           |
-| MONO 220V 3CV, 12-18A             | PDW-05 3CV-V18 12-18A 220V          |
-| MONO 220V 7,5CV, 36-45A           | PDW-05 7,5CV-V40 36-45A 220V        |
-| TRIF 380V 1/1,5CV, 1,6-2,5A       | PDW-05 1,5CV-V02 1,6-2,5A 380V     |
-| TRIF 380V 4/5CV, 7-10A            | PDW-05 5CV-V10 7-10A 380V           |
-| TRIF 380V 7,5CV, 12-18A           | PDW-05 7,5CV-V18 12-18A 380V       |
-| TRIF 380V 10CV, 12-18A            | PDW-05 10CV-V18 12-18A 380V        |
-| TRIF 380V 12,5/15CV, 17-25A       | PDW-05 15CV-V25 17-25A 380V        |
+**TABELA PDW — TRIFÁSICA 380V (V40) — CÓDIGOS SAP CONFIRMADOS:**
+| Referência WEG   | Potência (CV) | Faixa (A)    | Código SAP |
+|------------------|--------------|--------------|------------|
+| PDW02-0,16V40    | 0,16         | 0,4 – 0,63  | 10072580   |
+| PDW02-0,25V40    | 0,25         | 0,56 – 0,8  | 10186081   |
+| PDW02-0,33V40    | 0,33         | 0,8 – 1,2   | 10186082   |
+| PDW02-0,75V40    | 0,5 / 0,75   | 1,2 – 1,8   | 10045784   |
+| PDW02-1,5V40     | 1 / 1,5      | 1,8 – 2,8   | 10118384   |
+| PDW02-2V40       | 2            | 2,8 – 4     | 10045787   |
+| PDW02-3V40       | 3            | 4 – 6,3     | 10045788   |
+| PDW02-4V40       | 4            | 5,6 – 8     | 10045789   |
+| PDW04-5V40       | 5            | 7 – 10      | 10045790   |
+| PDW04-6V40       | 6            | 8 – 12,5    | 10045791   |
+| PDW04-7,5V40     | 7,5          | 10 – 15     | 10045792   |
+| PDW04-10V40      | 10           | 11 – 17     | 10045793   |
+| PDW04-12,5V40    | 12,5         | 15 – 23     | 10045794   |
+| PDW04-15V40      | 15           | 22 – 32     | 10046425   |
 
-⚠️ Códigos WAU exatos da linha PDW não estão disponíveis nesta base (exceto 13339232).
-Informar referência estimada no campo referencia_weg e solicitar confirmação de código com THP/WEG.
-Status deve ser "parcial" até confirmação do código WAU.
+**TABELA PDWM — MONOFÁSICA 220V (V25) — CÓDIGOS SAP CONFIRMADOS:**
+| Referência WEG         | Potência (CV)  | Faixa (A)   | Código SAP |
+|------------------------|---------------|-------------|------------|
+| PDWM02-0,16/0,125V25   | 0,125 / 0,16  | 1,2 – 1,8  | 10070900   |
+| PDWM02-0,33V25         | 0,25 / 0,33   | 2,8 – 4    | 10046171   |
+| PDWM02-0,5/0,75V25     | 0,5 / 0,75    | 4 – 6,3    | 10046170   |
+| PDWM02-1V25            | 0,75 / 1      | 5,6 – 8    | 10118357   |
+| PDWM04-1,5AV25         | 1,5           | 7 – 10     | 10907057   |
+| PDWM04-2A/1,5NV25      | 2             | 8 – 12,5   | 10045728   |
+| PDWM04-3/2V25          | 3             | 11 – 17    | 10045729   |
+| PDWM04-4AV25           | 4             | 15 – 23    | 10045739   |
+| PDWM04-5AV25           | 5             | 22 – 32    | 10046444   |
+| PDWM05-2A/1,5NV25      | 2             | 8 – 12,5   | 13339233   |
+| PDWM05-3/2V25          | 3             | 11 – 17    | 13339229   |
+| PDWM05-4AV25           | 4             | 15 – 23    | 13339270   |
+| PDWM05-5AV25           | 5             | 22 – 32    | 13339236   |
+| PDWM05-7,5AV25         | 7,5           | 32 – 40    | 13336722   |
+| PDWM06-7,5AV25         | 7,5           | 32 – 40    | 10045740   |
+| PDWM08-10AV25          | 10            | 32 – 50    | 10045766   |
+| PDWM08-12,5AV25        | 12,5          | 40 – 57    | 10045741   |
+| PDWM08-15AV25          | 15            | 57 – 70    | 10046182   |
 
-### H. PROTETORES DE SURTO (SPDs)
+Notas: V25=220V CA | V40=380V CA | V49=440V CA | VC8=127V CA
+Se a faixa do relé WEG for menor que a do concorrente para o mesmo CV: selecione o modelo com faixa imediatamente superior e anote "⚠ Faixa WEG: X-Y A — confirmar ajuste com cliente".
+Estes códigos SAP são confirmados — status="encontrado" quando o CV e tensão baterem exatamente.
+
+### H. PROTETORES DE SURTO (SPDs — Surge Protection Devices)
 - Usar tabela de equivalência da base de dados acima como prioridade
 - Para itens não listados: casar por tensão (Un), corrente máxima (Imax/kA), classe (I, II, III, I/II), tecnologia (varistor MOV, ECG)
 - WEG: SPW03 (CA classe II), SPW13 (CC/fotovoltaica)
 
-### H. EQUIPAMENTOS CFTV / REDE
+### I. EQUIPAMENTOS CFTV / REDE
 - Câmeras: casar por resolução (MP), distância IR (m), tipo (bullet/dome/PTZ), IP65/66, protocolo ONVIF
 - Switches: casar por número de portas PoE e não-PoE, potência total PoE, velocidade (10/100/1000)
 - Usar base WAU 14/2026 e 15/2026
