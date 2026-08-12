@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: weg-converter-thp
+    env: python
+    plan: free            # troque para "starter" se precisar de mais recursos
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false          # definir manualmente no dashboard do Render
+      - key: VISION_MODEL
+        value: claude-opus-4-5   # modelo para leitura de imagens
+      - key: TEXT_MODEL
+        value: claude-sonnet-4-5 # modelo para conversão de texto/Excel
