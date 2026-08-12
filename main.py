@@ -396,7 +396,72 @@ def process_image(content: bytes, ext: str) -> dict:
     return call_claude_image(content, ext)
 
 
+def _extrair_codigo_weg_descricao(texto: str):
+    """Extrai código SAP WEG (7-10 dígitos) de parênteses na descrição."""
+    if not texto:
+        return None
+    matches = re.findall(r'\((\d{7,10})\)', str(texto))
+    return matches[-1] if matches else None
+
+
+def _detectar_tabela_excel(content: bytes):
+    """Detecta cabeçalho real da tabela e extrai itens com códigos WEG embutidos."""
+    try:
+        import openpyxl as _opxl
+        wb = _opxl.load_workbook(io.BytesIO(content), data_only=True)
+        ws = wb.active
+        all_rows = list(ws.iter_rows(values_only=True))
+
+        KEYWORDS = {'cod', 'código', 'codigo', 'item', 'descriç', 'descrip', 'quant', 'unid', 'ref', 'material'}
+        header_row_idx = None
+        for i, row in enumerate(all_rows):
+            row_text = ' '.join(str(v).lower() for v in row if v is not None).strip()
+            if row_text and sum(1 for kw in KEYWORDS if kw in row_text) >= 2:
+                header_row_idx = i
+                break
+
+        if header_row_idx is None:
+            return None
+
+        headers = [str(v).strip() if v else f"Col{j}" for j, v in enumerate(all_rows[header_row_idx])]
+        rows_data = []
+        for row in all_rows[header_row_idx + 1:]:
+            if any(v is not None and str(v).strip() for v in row):
+                rows_data.append({headers[j]: (str(v).strip() if v is not None else '') for j, v in enumerate(row)})
+
+        if not rows_data:
+            return None
+
+        desc_col = next((k for k in headers if 'desc' in k.lower()), None)
+        lines = []
+        seq = 0
+        for row in rows_data:
+            if not any(v.strip() for v in row.values()):
+                continue
+            seq += 1
+            desc_text = row.get(desc_col, '') if desc_col else ''
+            weg_code = _extrair_codigo_weg_descricao(desc_text)
+            parts = [f"Item {seq}:"]
+            for k, v in row.items():
+                if v.strip():
+                    parts.append(f"{k}={v}")
+            if weg_code:
+                parts.append(f"[CÓDIGO SAP WEG NA DESCRIÇÃO: {weg_code}]")
+                parts.append("[PRODUTO JÁ É WEG — preencher codigo_weg com este valor; extrair referencia_weg do modelo na descrição; status=encontrado]")
+            lines.append(' | '.join(parts))
+
+        return '\n'.join(lines) if lines else None
+    except Exception:
+        return None
+
+
 def process_excel(content: bytes) -> dict:
+    # Detecção inteligente: lida com planilhas de pedido/cotação formatadas
+    enriched = _detectar_tabela_excel(content)
+    if enriched:
+        return call_claude_text(enriched, "Excel (tabela auto-detectada com códigos WEG extraídos)")
+
+    # Fallback: pandas direto
     try:
         df = pd.read_excel(io.BytesIO(content), engine="openpyxl")
     except Exception:
