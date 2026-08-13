@@ -34,7 +34,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # ─── Claude ──────────────────────────────────────────────────────────────────
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-VISION_MODEL = os.environ.get("VISION_MODEL", "claude-opus-4-5")
+VISION_MODEL = os.environ.get("VISION_MODEL", "claude-sonnet-4-5")
 TEXT_MODEL   = os.environ.get("TEXT_MODEL",   "claude-sonnet-4-5")
 
 # ─── Azure SQL — Conexão e Ferramenta ────────────────────────────────────────
@@ -177,12 +177,24 @@ TOOLS = [
             },
             "required": ["familia"],
         },
+        "cache_control": {"type": "ephemeral"},
+    }
+]
+
+# System prompt no formato de cache — economiza ~70% nos tokens de entrada
+# O cache dura 5 minutos e é compartilhado entre requisições do mesmo API key
+_CACHED_SYSTEM = [
+    {
+        "type": "text",
+        "text": SYSTEM_PROMPT,
+        "cache_control": {"type": "ephemeral"},
     }
 ]
 
 _DB_INSTRUCTION = (
     "Use SEMPRE a ferramenta `buscar_produto_weg` para consultar o banco de dados WEG. "
-    "Chame a ferramenta pelo menos uma vez por item/família identificada na lista do cliente. "
+    "IMPORTANTE: chame MÚLTIPLAS ferramentas em paralelo na mesma resposta — uma chamada por família identificada, "
+    "todas ao mesmo tempo. Nunca faça uma chamada por vez quando houver múltiplas famílias na lista. "
     "Nunca responda sem consultar o banco — os dados não estão no contexto, estão no banco. "
     "Famílias disponíveis: CWM, CWMC, RW, RWM, MPW, MWL, PDW, PDWM, CFW100, CFW300, CFW500, CFW11, CFW900, "
     "SSW05, SSW07, SSW08, SSW900, UCW, UCWT, MCW, BCW, BCWA, PFW03, PFW01, PFWD01, "
@@ -559,11 +571,11 @@ def call_claude_image(image_bytes: bytes, ext: str) -> dict:
             ],
         }
     ]
-    for _ in range(12):
+    for _ in range(8):
         resp = client.messages.create(
             model=VISION_MODEL,
             max_tokens=8192,
-            system=SYSTEM_PROMPT,
+            system=_CACHED_SYSTEM,
             tools=TOOLS,
             messages=messages,
         )
@@ -603,11 +615,11 @@ def call_claude_text(codes_text: str, source_hint: str = "planilha") -> dict:
             ),
         }
     ]
-    for _ in range(12):
+    for _ in range(8):
         resp = client.messages.create(
             model=TEXT_MODEL,
             max_tokens=8192,
-            system=SYSTEM_PROMPT,
+            system=_CACHED_SYSTEM,
             tools=TOOLS,
             messages=messages,
         )
