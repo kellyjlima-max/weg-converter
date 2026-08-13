@@ -186,7 +186,7 @@ _DB_INSTRUCTION = (
     "Nunca responda sem consultar o banco — os dados não estão no contexto, estão no banco. "
     "Famílias disponíveis: CWM, CWMC, RW, RWM, MPW, MWL, PDW, PDWM, CFW100, CFW300, CFW500, CFW11, CFW900, "
     "SSW05, SSW07, SSW08, SSW900, UCW, UCWT, MCW, BCW, BCWA, PFW03, PFW01, PFWD01, "
-    "CTSW, AHFW, DRW, SPW03, SPW13, PMW01, SWITCH, WCAM."
+    "CTSW, AHFW, DRW, SPW03, SPW13, PMW01, SWITCH, WCAM, CSW, CEW."
 )
 
 # ─── System prompt ────────────────────────────────────────────────────────────
@@ -206,6 +206,7 @@ _PROMPT_PART2 = """
 2. CUSTO-BENEFÍCIO: quando houver mais de uma opção WEG tecnicamente válida, SEMPRE indicar a de menor custo/gama que atenda os requisitos. Mencionar em "observacao" se há alternativa premium.
 3. ACESSÓRIOS: identificar acessórios solicitados (contatos auxiliares, bobinas, módulos de comunicação, encoders, displays) e indicar os códigos WEG complementares no campo "acessorios_weg".
 4. TENSÃO DA BOBINA / ALIMENTAÇÃO: sempre verificar e casar (24 VCC, 24 VCA, 110 V, 220 V, 380 V, 440 V, 480 V).
+5. CONCORRENTES — REGRA ABSOLUTA: JAMAIS mencionar, sugerir ou citar produtos de fabricantes concorrentes (Siemens, ABB, Schneider, Eaton, etc.) em qualquer campo da resposta — nem em "observacao", nem em "descricao_weg", nem em "observacoes_gerais". A THP Representações trabalha EXCLUSIVAMENTE com produtos WEG/WAU. Quando não houver equivalente WEG no banco de dados, retornar status="não encontrado" e observacao="Produto não localizado na linha WEG atual — consultar departamento comercial WEG para verificar disponibilidade ou equivalente." NUNCA sugerir que o cliente procure produto de outro fabricante.
 
 ==========================================================================
 ## MATCHING TÉCNICO POR FAMÍLIA DE PRODUTO
@@ -412,6 +413,27 @@ Concorrentes mais comuns de capacitores:
 Regra de matching por item de texto livre (ex: "Capacitor 16,24 kvar 380 volts"):
 → 16,24 kVAr trifásico 380V → buscar com buscar_produto_weg(familia="UCWT", potencia_kvar=16.24, tensao_v="380")
 Regra: se kVAr exato não existe, usar UCWT imediatamente acima e registrar no campo "observacao": "⚠ kVAr WEG imediatamente superior — confirmar com cliente".
+
+==========================================================================
+### K. SINALIZAÇÃO E COMANDO (Pilot Lights / Sinaleiros / Botoeiras / Comutadores)
+Concorrentes identificados por código: Siemens 3SB3 | Schneider XB7, ZB4, ZB5 | Eaton M22, RMQ | ABB CP, CP-S | Lovato LP
+
+WEG — famílias CSW e CEW (Sinalização e Comando Ø22mm):
+- Sinaleiros/lâmpadas piloto LED: buscar com buscar_produto_weg(familia="CSW", texto_livre="sinaleiro LED <cor> <tensão>V")
+- Botoeiras pulsadoras: buscar com buscar_produto_weg(familia="CSW", texto_livre="botao pulsador <cor>")
+- Botoeiras iluminadas: buscar com buscar_produto_weg(familia="CSW", texto_livre="botao iluminado <cor> <tensão>V")
+- Botões de emergência: buscar com buscar_produto_weg(familia="CSW", texto_livre="botao emergencia")
+- Comutadores/seletores: buscar com buscar_produto_weg(familia="CSW", texto_livre="comutador seletor")
+- CEW (versão Modular): buscar com buscar_produto_weg(familia="CEW", texto_livre="<tipo> <cor>")
+
+Parâmetros críticos a extrair e casar:
+- Cor: vermelho / verde / amarelo / branco / azul / laranja
+- Tensão: 24V CC | 24V CA | 110V CA | 220V CA | 127V CA
+- Tipo: LED (preferencial) ou lâmpada incandescente/néon
+- Montagem: 22mm (padrão industrial) ou 30mm
+- Contatos auxiliares necessários: NA e/ou NF
+
+ATENÇÃO: Se não encontrar no banco, retornar status="não encontrado" com observacao="Consultar departamento comercial WEG — linha CSW/CEW de sinalização e comando 22mm disponível em diversas cores e tensões." NUNCA sugerir produto de concorrente.
 
 ==========================================================================
 ## IDENTIFICAÇÃO DE FABRICANTE POR CÓDIGO
