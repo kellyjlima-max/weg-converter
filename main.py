@@ -574,16 +574,19 @@ def call_claude_image(image_bytes: bytes, ext: str) -> dict:
     for _ in range(10):
         resp = client.messages.create(
             model=VISION_MODEL,
-            max_tokens=8192,
+            max_tokens=16384,
             system=_CACHED_SYSTEM,
             tools=TOOLS,
             messages=messages,
         )
-        if resp.stop_reason == "end_turn":
+        if resp.stop_reason in ("end_turn", "max_tokens"):
             for block in resp.content:
-                if hasattr(block, "text"):
-                    return parse_json_response(block.text)
-            break
+                if hasattr(block, "text") and block.text:
+                    parsed = parse_json_response(block.text)
+                    if parsed.get("items"):
+                        return parsed
+            if resp.stop_reason == "end_turn":
+                break
         if resp.stop_reason == "tool_use":
             messages.append({"role": "assistant", "content": resp.content})
             tool_results = []
@@ -603,7 +606,8 @@ def call_claude_image(image_bytes: bytes, ext: str) -> dict:
                 })
             messages.append({"role": "user", "content": tool_results})
             continue
-        break
+        if resp.stop_reason not in ("tool_use", "max_tokens"):
+            break
     return parse_json_response("")
 
 
@@ -625,16 +629,19 @@ def call_claude_text(codes_text: str, source_hint: str = "planilha") -> dict:
     for _ in range(10):
         resp = client.messages.create(
             model=TEXT_MODEL,
-            max_tokens=8192,
+            max_tokens=16384,
             system=_CACHED_SYSTEM,
             tools=TOOLS,
             messages=messages,
         )
-        if resp.stop_reason == "end_turn":
+        if resp.stop_reason in ("end_turn", "max_tokens"):
             for block in resp.content:
-                if hasattr(block, "text"):
-                    return parse_json_response(block.text)
-            break
+                if hasattr(block, "text") and block.text:
+                    parsed = parse_json_response(block.text)
+                    if parsed.get("items"):
+                        return parsed
+            if resp.stop_reason == "end_turn":
+                break
         if resp.stop_reason == "tool_use":
             messages.append({"role": "assistant", "content": resp.content})
             tool_results = []
@@ -654,7 +661,8 @@ def call_claude_text(codes_text: str, source_hint: str = "planilha") -> dict:
                 })
             messages.append({"role": "user", "content": tool_results})
             continue
-        break
+        if resp.stop_reason not in ("tool_use", "max_tokens"):
+            break
     return parse_json_response("")
 
 
