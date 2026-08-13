@@ -177,7 +177,6 @@ TOOLS = [
             },
             "required": ["familia"],
         },
-        "cache_control": {"type": "ephemeral"},
     }
 ]
 
@@ -571,7 +570,8 @@ def call_claude_image(image_bytes: bytes, ext: str) -> dict:
             ],
         }
     ]
-    for _ in range(8):
+    db_down_warned = False
+    for _ in range(10):
         resp = client.messages.create(
             model=VISION_MODEL,
             max_tokens=8192,
@@ -595,6 +595,12 @@ def call_claude_image(image_bytes: bytes, ext: str) -> dict:
                         "tool_use_id": block.id,
                         "content": result,
                     })
+            if not db_down_warned and _all_tool_errors(tool_results):
+                db_down_warned = True
+                tool_results.append({
+                    "type": "text",
+                    "text": _DB_DOWN_MSG,
+                })
             messages.append({"role": "user", "content": tool_results})
             continue
         break
@@ -615,7 +621,8 @@ def call_claude_text(codes_text: str, source_hint: str = "planilha") -> dict:
             ),
         }
     ]
-    for _ in range(8):
+    db_down_warned = False
+    for _ in range(10):
         resp = client.messages.create(
             model=TEXT_MODEL,
             max_tokens=8192,
@@ -639,10 +646,39 @@ def call_claude_text(codes_text: str, source_hint: str = "planilha") -> dict:
                         "tool_use_id": block.id,
                         "content": result,
                     })
+            if not db_down_warned and _all_tool_errors(tool_results):
+                db_down_warned = True
+                tool_results.append({
+                    "type": "text",
+                    "text": _DB_DOWN_MSG,
+                })
             messages.append({"role": "user", "content": tool_results})
             continue
         break
     return parse_json_response("")
+
+
+def _all_tool_errors(tool_results: list) -> bool:
+    """Retorna True se TODOS os resultados de ferramentas são erros do banco."""
+    if not tool_results:
+        return False
+    for tr in tool_results:
+        content_str = tr.get("content", "")
+        try:
+            obj = json.loads(content_str)
+            if not (isinstance(obj, dict) and "erro" in obj):
+                return False
+        except Exception:
+            return False
+    return True
+
+
+_DB_DOWN_MSG = (
+    "O banco de dados WEG está temporariamente indisponível (erro de conexão). "
+    "Retorne o JSON de saída com status='não encontrado' e "
+    "observacao='Banco de dados temporariamente indisponível — tente novamente em alguns minutos.' "
+    "para cada item da lista original. RETORNE APENAS o JSON, sem texto adicional."
+)
 
 
 def process_image(content: bytes, ext: str) -> dict:
@@ -897,6 +933,17 @@ async def health():
         return {"status": "ok", "db": "connected", "produtos": total}
     except Exception as e:
         return {"status": "ok", "db": "error", "detail": str(e)}
+
+@app.get("/debug-ip")
+async def debug_ip():
+    """Retorna o IP de saída atual do servidor (para configurar firewall Azure SQL)."""
+    import urllib.request
+    try:
+        ip = urllib.request.urlopen("https://api.ipify.org", timeout=5).read().decode()
+    except Exception as e:
+        ip = "erro: " + str(e)
+    return {"outbound_ip": ip, "note": "Adicione este IP no firewall do Azure SQL Server -> Networking -> Firewall rules"}
+
 
 @app.post("/api/convert")
 async def convert(file: UploadFile = File(...)):
