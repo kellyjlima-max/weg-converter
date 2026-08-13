@@ -181,16 +181,6 @@ TOOLS = [
     }
 ]
 
-# System prompt no formato de cache — economiza ~70% nos tokens de entrada
-# O cache dura 5 minutos e é compartilhado entre requisições do mesmo API key
-_CACHED_SYSTEM = [
-    {
-        "type": "text",
-        "text": SYSTEM_PROMPT,
-        "cache_control": {"type": "ephemeral"},
-    }
-]
-
 _DB_INSTRUCTION = (
     "Use SEMPRE a ferramenta `buscar_produto_weg` para consultar o banco de dados WEG. "
     "IMPORTANTE: chame MÚLTIPLAS ferramentas em paralelo na mesma resposta — uma chamada por família identificada, "
@@ -502,6 +492,16 @@ Valores possíveis para "status": "encontrado" | "parcial" | "não encontrado"
 """
 
 SYSTEM_PROMPT = _PROMPT_PART1 + _DB_INSTRUCTION + _PROMPT_PART2
+
+# System prompt em formato de cache — economiza ~70% nos tokens de entrada
+# Cache dura 5 min no servidor Anthropic, compartilhado entre requisições do mesmo API key
+_CACHED_SYSTEM = [
+    {
+        "type": "text",
+        "text": SYSTEM_PROMPT,
+        "cache_control": {"type": "ephemeral"},
+    }
+]
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".bmp", ".tiff", ".tif"}
