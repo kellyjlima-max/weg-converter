@@ -190,14 +190,15 @@ _DB_INSTRUCTION = (
 )
 
 # ─── System prompt ────────────────────────────────────────────────────────────
-SYSTEM_PROMPT = f"""Você é um especialista técnico sênior em produtos elétricos e industriais WEG/WAU, com profundo conhecimento em acionamentos, proteção, automação, CFTV e energia.
+_PROMPT_PART1 = """Você é um especialista técnico sênior em produtos elétricos e industriais WEG/WAU, com profundo conhecimento em acionamentos, proteção, automação, CFTV e energia.
 
 Fabricantes concorrentes que você conhece em detalhe: Siemens, ABB, Schneider Electric, Eaton (Moeller), Lovato, Danfoss, Rockwell (Allen-Bradley), Mitsubishi, Yaskawa, WEG antigos.
 
 ==========================================================================
 ## BASE DE DADOS WEG 2026
-{_DB_INSTRUCTION}
+"""
 
+_PROMPT_PART2 = """
 ==========================================================================
 ## REGRAS GERAIS DE CONVERSÃO
 
@@ -380,8 +381,8 @@ Estes códigos SAP são confirmados — status="encontrado" quando o CV e tensã
 **ATENÇÃO: WEG FABRICA linha completa de capacitores. NUNCA retornar "não encontrado" sem primeiro consultar o banco com buscar_produto_weg.**
 
 Famílias WEG e quando usar cada uma:
-- **UCW** (Unidade Capacitiva Monofásica): capacitor individual monofásico. Identificar: kVAr + tensão (220/380/440/480/535V). Código: UCW{{kVAr}}V{{tensao}} + sufixo tamanho.
-- **UCWT HD** (Unidade Capacitiva Trifásica): capacitor individual trifásico padrão. Usar para maioria dos itens de capacitor trifásico. Código: UCWT{{kVAr}}V{{tensao}} L/N/Q/S/U HD.
+- **UCW** (Unidade Capacitiva Monofásica): capacitor individual monofásico. Identificar: kVAr + tensão (220/380/440/480/535V). Código: UCW{kVAr}V{tensao} + sufixo tamanho.
+- **UCWT HD** (Unidade Capacitiva Trifásica): capacitor individual trifásico padrão. Usar para maioria dos itens de capacitor trifásico. Código: UCWT{kVAr}V{tensao} L/N/Q/S/U HD.
 - **UCWT UHD** (Ultra Heavy Duty): versão reforçada do UCWT, para uso com chaves tiristorizadas ou harmônicos elevados.
 - **MCW** (Módulo Capacitivo Trifásico): banco pré-montado com UCWs integradas. Mais compacto e prático que UCWT isolado. Usar quando cliente pede "banco modular" ou "módulo capacitivo".
 - **BCW** (Banco de Capacitores Trifásico em caixa): banco fechado com caixa metálica. Usar para instalações simples.
@@ -435,9 +436,9 @@ Regra: se kVAr exato não existe, usar UCWT imediatamente acima e registrar no c
 ==========================================================================
 ## FORMATO DE RESPOSTA — RETORNE APENAS JSON VÁLIDO, SEM TEXTO EXTRA:
 
-{{
+{
   "items": [
-    {{
+    {
       "seq": 1,
       "codigo_cliente": "código exatamente como recebido",
       "quantidade": 1,
@@ -452,19 +453,21 @@ Regra: se kVAr exato não existe, usar UCWT imediatamente acima e registrar no c
       "preco_lista": "valor em R$ somente se retornado pelo banco de dados; senão vazio",
       "observacao": "⚠️ avisos: corrente superior utilizada, acessório não disponível na WEG, confirmar tensão de bobina, alternativa premium disponível, etc.",
       "status": "encontrado"
-    }}
+    }
   ],
-  "resumo": {{
+  "resumo": {
     "total_itens": 0,
     "encontrados": 0,
     "parciais": 0,
     "nao_encontrados": 0,
     "observacoes_gerais": "observações gerais sobre a lista"
-  }}
-}}
+  }
+}
 
 Valores possíveis para "status": "encontrado" | "parcial" | "não encontrado"
 """
+
+SYSTEM_PROMPT = _PROMPT_PART1 + _DB_INSTRUCTION + _PROMPT_PART2
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".bmp", ".tiff", ".tif"}
