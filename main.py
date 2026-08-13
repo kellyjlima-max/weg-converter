@@ -876,7 +876,15 @@ async def root():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM weg_produtos WHERE ativo = 1")
+        total = cursor.fetchone()[0]
+        conn.close()
+        return {"status": "ok", "db": "connected", "produtos": total}
+    except Exception as e:
+        return {"status": "ok", "db": "error", "detail": str(e)}
 
 @app.post("/api/convert")
 async def convert(file: UploadFile = File(...)):
