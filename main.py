@@ -988,48 +988,6 @@ async def debug_ip():
     return {"outbound_ip": ip, "note": "Adicione este IP no firewall do Azure SQL Server -> Networking -> Firewall rules"}
 
 
-# ─── ENDPOINT TEMPORÁRIO DE MIGRAÇÃO (remover após uso) ──────────────────────
-@app.post("/admin/run-sql")
-async def run_sql(request: Request):
-    """Executa SQL arbitrário no banco. TOKEN obrigatório. REMOVER APÓS USO."""
-    MIGRATION_TOKEN = "weg-migration-2026"
-    data = await request.json()
-    if data.get("token") != MIGRATION_TOKEN:
-        return {"error": "token inválido"}, 403
-    sql = data.get("sql", "").strip()
-    if not sql:
-        return {"error": "sql vazio"}
-    try:
-        import re
-        conn = get_conn()
-        cursor = conn.cursor()
-        # Separar por ; seguido de newline (cada MERGE/UPDATE termina em ;)
-        raw_stmts = re.split(r';\s*\n', sql)
-        statements = [s.strip() for s in raw_stmts if s.strip()
-                      and not s.strip().startswith('--')]
-        total_rows = 0
-        errors = []
-        for stmt in statements:
-            stmt = stmt.strip()
-            if not stmt.endswith(';'):
-                stmt = stmt + ';'
-            if not stmt or stmt.startswith('--'):
-                continue
-            try:
-                cursor.execute(stmt)
-                if cursor.rowcount > 0:
-                    total_rows += cursor.rowcount
-            except Exception as stmt_err:
-                errors.append(str(stmt_err)[:200])
-        conn.commit()
-        cursor.execute("SELECT COUNT(*) FROM weg_produtos WHERE ativo = 1")
-        ativos = cursor.fetchone()[0]
-        conn.close()
-        return {"ok": True, "rows_affected": total_rows,
-                "produtos_ativos": ativos, "stmt_errors": errors}
-    except Exception as e:
-        return {"error": str(e)}
-# ─────────────────────────────────────────────────────────────────────────────
 
 
 @app.post("/api/convert")
