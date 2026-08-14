@@ -1042,26 +1042,31 @@ async def export(request: Request):
     )
 
 
+
 @app.post('/admin/run-sql')
 async def run_sql(request: Request):
-    import pymssql
-    data = await request.json()
+    try:
+        body = await request.body()
+        import json as _json
+        data = _json.loads(body.decode('utf-8'))
+    except Exception as e:
+        return JSONResponse(status_code=200, content={'error': 'parse: ' + str(e)[:300]})
     if data.get('token') != 'weg-migration-2026':
-        raise HTTPException(status_code=403, detail='Forbidden')
-    sql = data.get('sql', '')
-    if not sql.strip():
-        raise HTTPException(status_code=400, detail='SQL vazio')
-    conn = get_conn()
-    cur = conn.cursor()
-    statements = [s.strip() for s in sql.split(';') if s.strip()]
-    executed = 0
-    errors = []
-    for stmt in statements:
-        try:
-            cur.execute(stmt)
-            executed += 1
-        except Exception as e:
-            errors.append(str(e)[:200])
-    conn.commit()
-    conn.close()
-    return {'executed': executed, 'errors': errors}
+        return JSONResponse(status_code=403, content={'error': 'forbidden'})
+    sql_text = data.get('sql', '')
+    results = {'executed': 0, 'errors': []}
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        stmts = [s.strip() for s in sql_text.split(';') if s.strip() and not s.strip().startswith('--')]
+        for stmt in stmts:
+            try:
+                cur.execute(stmt)
+                results['executed'] += 1
+            except Exception as e2:
+                results['errors'].append(stmt[:80] + ' | ERR: ' + str(e2)[:150])
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        results['errors'].append('CONN/EXEC: ' + str(e)[:300])
+    return JSONResponse(content=results)
