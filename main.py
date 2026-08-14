@@ -1040,3 +1040,28 @@ async def export(request: Request):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=conversao_weg.xlsx"},
     )
+
+
+@app.post('/admin/run-sql')
+async def run_sql(request: Request):
+    import pymssql
+    data = await request.json()
+    if data.get('token') != 'weg-migration-2026':
+        raise HTTPException(status_code=403, detail='Forbidden')
+    sql = data.get('sql', '')
+    if not sql.strip():
+        raise HTTPException(status_code=400, detail='SQL vazio')
+    conn = get_conn()
+    cur = conn.cursor()
+    statements = [s.strip() for s in sql.split(';') if s.strip()]
+    executed = 0
+    errors = []
+    for stmt in statements:
+        try:
+            cur.execute(stmt)
+            executed += 1
+        except Exception as e:
+            errors.append(str(e)[:200])
+    conn.commit()
+    conn.close()
+    return {'executed': executed, 'errors': errors}
