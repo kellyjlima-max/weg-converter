@@ -1000,21 +1000,31 @@ async def run_sql(request: Request):
     if not sql:
         return {"error": "sql vazio"}
     try:
+        import re
         conn = get_conn()
         cursor = conn.cursor()
-        # Executar statement por statement (separados por GO)
-        statements = [s.strip() for s in sql.split("\nGO") if s.strip()]
+        # Separar por ; seguido de newline (cada MERGE/UPDATE termina em ;)
+        raw_stmts = re.split(r';\s*\n', sql)
+        statements = [s.strip() for s in raw_stmts if s.strip()
+                      and not s.strip().startswith('--')]
         total_rows = 0
+        errors = []
         for stmt in statements:
-            if stmt:
+            stmt = stmt.rstrip(';').strip()
+            if not stmt or stmt.startswith('--'):
+                continue
+            try:
                 cursor.execute(stmt)
                 if cursor.rowcount > 0:
                     total_rows += cursor.rowcount
+            except Exception as stmt_err:
+                errors.append(str(stmt_err)[:200])
         conn.commit()
         cursor.execute("SELECT COUNT(*) FROM weg_produtos WHERE ativo = 1")
         ativos = cursor.fetchone()[0]
         conn.close()
-        return {"ok": True, "rows_affected": total_rows, "produtos_ativos": ativos}
+        return {"ok": True, "rows_affected": total_rows,
+                "produtos_ativos": ativos, "stmt_errors": errors}
     except Exception as e:
         return {"error": str(e)}
 # ─────────────────────────────────────────────────────────────────────────────
