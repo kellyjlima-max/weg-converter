@@ -1010,7 +1010,9 @@ async def run_sql(request: Request):
         total_rows = 0
         errors = []
         for stmt in statements:
-            stmt = stmt.rstrip(';').strip()
+            stmt = stmt.strip()
+            if not stmt.endswith(';'):
+                stmt = stmt + ';'
             if not stmt or stmt.startswith('--'):
                 continue
             try:
