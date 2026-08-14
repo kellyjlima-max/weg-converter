@@ -1067,7 +1067,7 @@ async def run_sql(request: Request):
                  if s.strip() and not s.strip().startswith('--')]
         for stmt in stmts:
             try:
-                cur.execute(stmt)
+                cur.execute(stmt + ";")
                 results['executed'] += 1
             except Exception as e2:
                 results['errors'].append(stmt[:80] + ' | ERR: ' + str(e2)[:150])
