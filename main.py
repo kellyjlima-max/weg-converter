@@ -143,7 +143,7 @@ TOOLS = [
                         "Família WEG: CWM, CWMC, RW, RWM, MPW, MWL, PDW, PDWM, "
                         "CFW100, CFW300, CFW500, CFW11, CFW900, SSW05, SSW07, SSW08, SSW900, "
                         "UCW, UCWT, MCW, BCW, BCWA, PFW03, PFW01, PFWD01, "
-                        "CTSW, AHFW, DRW, SPW03, SPW13, PMW01, SWITCH, WCAM"
+                        "CTSW, AHFW, DRW, SPW03, SPW13, PMW01, SWITCH, WCAM, CSW, CEW, FNH, BORNE"
                     ),
                 },
                 "corrente_min": {
@@ -185,9 +185,14 @@ _DB_INSTRUCTION = (
     "IMPORTANTE: chame MÚLTIPLAS ferramentas em paralelo na mesma resposta — uma chamada por família identificada, "
     "todas ao mesmo tempo. Nunca faça uma chamada por vez quando houver múltiplas famílias na lista. "
     "Nunca responda sem consultar o banco — os dados não estão no contexto, estão no banco. "
+    "REGRA CRÍTICA DO SAP CODE: o campo codigo_weg DEVE conter o código SAP de 8 dígitos numéricos. "
+    "Esse código SÓ existe no banco de dados — nunca invente ou omita. "
+    "MESMO para itens que já são WEG (fabricante=WEG na lista do cliente), consulte o banco para obter o SAP code. "
+    "Para produtos WEG já identificados: chame buscar_produto_weg(familia=<família>, texto_livre=<referência>) "
+    "para recuperar o código SAP e o preço de lista do banco. "
     "Famílias disponíveis: CWM, CWMC, RW, RWM, MPW, MWL, PDW, PDWM, CFW100, CFW300, CFW500, CFW11, CFW900, "
     "SSW05, SSW07, SSW08, SSW900, UCW, UCWT, MCW, BCW, BCWA, PFW03, PFW01, PFWD01, "
-    "CTSW, AHFW, DRW, SPW03, SPW13, PMW01, SWITCH, WCAM, CSW, CEW."
+    "CTSW, AHFW, DRW, SPW03, SPW13, PMW01, SWITCH, WCAM, CSW, CEW, FNH, BORNE."
 )
 
 # ─── System prompt ────────────────────────────────────────────────────────────
@@ -416,7 +421,24 @@ Regra de matching por item de texto livre (ex: "Capacitor 16,24 kvar 380 volts")
 Regra: se kVAr exato não existe, usar UCWT imediatamente acima e registrar no campo "observacao": "⚠ kVAr WEG imediatamente superior — confirmar com cliente".
 
 ==========================================================================
-### K. SINALIZAÇÃO E COMANDO (Pilot Lights / Sinaleiros / Botoeiras / Comutadores)
+### K. FUSÍVEIS NH (High Breaking Capacity / Fuses)
+Concorrentes: Siemens SITOR / SENTRON | Schneider DF2/DF4 | ABB OFAF | Eaton | Bussmann | Rittal
+
+WEG — família FNH (Fusíveis NH gG/gL):
+- FNH1: tamanho NH1, correntes até 160A
+- FNH2: tamanho NH2, correntes até 400A
+- FNH3: tamanho NH3, correntes até 630A
+- Sufixo U = universal; tensão padrão 500V
+- Buscar: buscar_produto_weg(familia="FNH", corrente_min=<corrente>, tensao_v="500")
+- Ou por texto: buscar_produto_weg(familia="FNH", texto_livre="NH2 400")
+
+Parâmetros críticos:
+- Tamanho: NH00 / NH0 / NH1 / NH2 / NH3
+- Corrente nominal (A): casar exatamente ou imediatamente acima
+- Tensão: 500V (padrão industrial) ou 690V
+
+==========================================================================
+### L. SINALIZAÇÃO E COMANDO (Pilot Lights / Sinaleiros / Botoeiras / Comutadores)
 Concorrentes identificados por código: Siemens 3SB3 | Schneider XB7, ZB4, ZB5 | Eaton M22, RMQ | ABB CP, CP-S | Lovato LP
 
 WEG — famílias CSW e CEW (Sinalização e Comando Ø22mm):
@@ -435,6 +457,19 @@ Parâmetros críticos a extrair e casar:
 - Contatos auxiliares necessários: NA e/ou NF
 
 ATENÇÃO: Se não encontrar no banco, retornar status="não encontrado" com observacao="Consultar departamento comercial WEG — linha CSW/CEW de sinalização e comando 22mm disponível em diversas cores e tensões." NUNCA sugerir produto de concorrente.
+
+==========================================================================
+### M. BORNES DE CONEXÃO / TERMINAIS (Terminal Blocks)
+Concorrentes: Phoenix Contact SAK, UTTB | Weidmuller SAK, WDU | ABB SAK | Siemens | Schneider NSYTRV
+
+WEG — família BORNE:
+- SAK 2,5mm²: buscar_produto_weg(familia="BORNE", texto_livre="SAK 2.5")
+- SAK 4mm²: buscar_produto_weg(familia="BORNE", texto_livre="SAK 4")
+- SAK 6mm², 10mm², 16mm²: buscar_produto_weg(familia="BORNE", texto_livre="SAK <seção>")
+- Barras de aterramento: buscar_produto_weg(familia="BORNE", texto_livre="PE terra")
+
+Identificação: "BORNE SAK", "BORNE CONECTOR SAK", "TERMINAL SAK", "WDU", "UTTB" → familia="BORNE"
+Parâmetro crítico: seção do cabo em mm² (1,5 / 2,5 / 4 / 6 / 10 / 16 / 35 / 70mm²)
 
 ==========================================================================
 ## IDENTIFICAÇÃO DE FABRICANTE POR CÓDIGO
@@ -469,7 +504,7 @@ ATENÇÃO: Se não encontrar no banco, retornar status="não encontrado" com obs
       "descricao_cliente": "descrição/nome do produto do cliente",
       "tipo_produto": "categoria: Contator / DPM / Drive / Soft Starter / SPD / Câmera / etc.",
       "especificacoes": "corrente, tensão alimentação, tensão bobina, polos, acessórios, grau proteção, comunicação, etc. — COMPLETO",
-      "codigo_weg": "código WAU 8 dígitos (item principal) ou vazio",
+      "codigo_weg": "código SAP/WAU exatamente 8 dígitos numéricos — OBRIGATÓRIO buscar no banco mesmo para produtos já WEG; deixar vazio SOMENTE se o banco retornar NULL",
       "referencia_weg": "referência WEG (ex: CWM40-11-30V04) ou vazio",
       "descricao_weg": "descrição completa do produto WEG equivalente",
       "acessorios_weg": "códigos/referências WEG de acessórios separados necessários (ex: CW1, BVM, módulo ELP) ou vazio",
@@ -951,6 +986,38 @@ async def debug_ip():
     except Exception as e:
         ip = "erro: " + str(e)
     return {"outbound_ip": ip, "note": "Adicione este IP no firewall do Azure SQL Server -> Networking -> Firewall rules"}
+
+
+# ─── ENDPOINT TEMPORÁRIO DE MIGRAÇÃO (remover após uso) ──────────────────────
+@app.post("/admin/run-sql")
+async def run_sql(request: Request):
+    """Executa SQL arbitrário no banco. TOKEN obrigatório. REMOVER APÓS USO."""
+    MIGRATION_TOKEN = "weg-migration-2026"
+    data = await request.json()
+    if data.get("token") != MIGRATION_TOKEN:
+        return {"error": "token inválido"}, 403
+    sql = data.get("sql", "").strip()
+    if not sql:
+        return {"error": "sql vazio"}
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        # Executar statement por statement (separados por GO)
+        statements = [s.strip() for s in sql.split("\nGO") if s.strip()]
+        total_rows = 0
+        for stmt in statements:
+            if stmt:
+                cursor.execute(stmt)
+                if cursor.rowcount > 0:
+                    total_rows += cursor.rowcount
+        conn.commit()
+        cursor.execute("SELECT COUNT(*) FROM weg_produtos WHERE ativo = 1")
+        ativos = cursor.fetchone()[0]
+        conn.close()
+        return {"ok": True, "rows_affected": total_rows, "produtos_ativos": ativos}
+    except Exception as e:
+        return {"error": str(e)}
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 @app.post("/api/convert")
