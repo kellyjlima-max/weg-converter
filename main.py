@@ -1042,37 +1042,3 @@ async def export(request: Request):
     )
 
 
-
-
-@app.post('/admin/run-sql')
-async def run_sql(request: Request):
-    import base64, json as _json
-    try:
-        body = await request.body()
-        data = _json.loads(body.decode('utf-8'))
-    except Exception as e:
-        return JSONResponse(content={'error': 'parse: ' + str(e)[:300]})
-    if data.get('token') != 'weg-migration-2026':
-        return JSONResponse(status_code=403, content={'error': 'forbidden'})
-    sql_b64 = data.get('sql_b64', '')
-    try:
-        sql_text = base64.b64decode(sql_b64).decode('utf-8')
-    except Exception as e:
-        return JSONResponse(content={'error': 'b64: ' + str(e)[:200]})
-    results = {'executed': 0, 'errors': []}
-    try:
-        conn = get_conn()
-        cur = conn.cursor()
-        stmts = [s.strip() for s in sql_text.split(';')
-                 if s.strip() and not s.strip().startswith('--')]
-        for stmt in stmts:
-            try:
-                cur.execute(stmt + ";")
-                results['executed'] += 1
-            except Exception as e2:
-                results['errors'].append(stmt[:80] + ' | ERR: ' + str(e2)[:150])
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        results['errors'].append('CONN: ' + str(e)[:300])
-    return JSONResponse(content=results)
