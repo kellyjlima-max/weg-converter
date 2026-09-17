@@ -241,6 +241,28 @@ WEG – linha MPW:
 - Acessórios WEG: CW1 (contato NA), CW2 (contato NF), BST (bobina shunt), BVM (mínima tensão)
 - Indicar sempre código base + códigos de acessórios separados
 
+### A2. DISJUNTORES RESIDENCIAIS E INDUSTRIAIS (MDWP / MDWH / MDWS)
+Concorrentes: Siemens 5SL | Schneider iC60, C60N, Acti9 | ABB S200, SH200 | Eaton | Hager
+
+Familias WEG:
+- **MDWP**: linha principal de disjuntores termomagneticos
+- **MDWH**: disjuntores de alta capacidade de ruptura
+- **MDWS**: disjuntores com diferencial (RCCB integrado)
+
+Parametros criticos:
+- Corrente nominal (A): 6, 10, 16, 20, 25, 32, 40, 50, 63 A...
+- Numero de polos: Unipolar (1P), Bipolar (2P / B), Tripolar (3P / T), Tetrapolar (4P)
+- Curva de disparo: B (residencial), C (uso geral), D (industrial/motores)
+- Capacidade de ruptura (kA): 3, 4,5, 6, 10 kA
+
+**REGRA BIPOLAR 25A — SAP CONFIRMADO:**
+Quando o cliente especificar disjuntor bipolar de 25A (MDWP, MDWH ou similar):
+- referencia_weg = MDWP-B25-2
+- codigo_weg = 15265897
+- status = encontrado (SAP confirmado — nao consultar banco para este item especifico)
+Para outros amperagens/polos: buscar_produto_weg(familia="MDWP", texto_livre="<amperagem> <polos>").
+
+==========================================================================
 ### B. CONTATORES (Contactors)
 Concorrentes: Siemens 3RT2 | Schneider LC1-D, LC1-F | ABB AF-line, A-line | Eaton DILM | Lovato BF/BG
 
