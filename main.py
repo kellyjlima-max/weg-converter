@@ -190,9 +190,14 @@ _DB_INSTRUCTION = (
     "MESMO para itens que já são WEG (fabricante=WEG na lista do cliente), consulte o banco para obter o SAP code. "
     "Para produtos WEG já identificados: chame buscar_produto_weg(familia=<família>, texto_livre=<referência>) "
     "para recuperar o código SAP e o preço de lista do banco. "
-    "Famílias disponíveis: CWM, CWMC, RW, RWM, MPW, MWL, PDW, PDWM, CFW100, CFW300, CFW500, CFW11, CFW900, "
-    "SSW05, SSW07, SSW08, SSW900, UCW, UCWT, MCW, BCW, BCWA, PFW03, PFW01, PFWD01, "
-    "CTSW, AHFW, DRW, SPW03, SPW13, PMW01, SWITCH, WCAM, CSW, CEW, FNH, BORNE."
+    "Famílias disponíveis: CWM, CWMC, CWB, CWBS, CWBC, CWL, CWC0, RW, RWM, RWL, MPW, MWL, PDW, PDWM, "
+    "CFW100, CFW300, CFW500, CFW501, CFW11, CFW900, SSW05, SSW07, SSW08, SSW900, "
+    "UCW, UCWT, MCW, BCW, BCWA, BTW, CBW3, CDW, ACW, ABW, ABWC, VBW, DWA, DWB, DWP, "
+    "MDWH, MDWP, MDWS, ETW, ERWT, RTW17, ADV200, AFE200, ADL300, ADL500, ADP200, "
+    "AFW11, AFW900, AGW, ASW07, CLAW, CMLW, CMRW, LTW, FSW, PCW, PEW, PRW, PSW, "
+    "PFW03, PFW01, PFWD01, CTSW, AHFW, DRW, SPW03, SPW13, SRW01, RFW, RIW, RUW100, "
+    "PMW01, SWITCH, WCAM, SWA, CSW, CEW, FNH, BORNE. "
+    "REGRA CWB: quando cliente especificar CWB/CWBS/CWBC, buscar familia=CWB no banco — NAO converter para CWM."
 )
 
 # ─── System prompt ────────────────────────────────────────────────────────────
@@ -246,10 +251,24 @@ Parâmetros críticos:
 - Contatos auxiliares integrados: quantos NA e quantos NF
 - Se cliente pede contatos adicionais: indicar blocos auxiliares CW1/CW2 separados
 
-WEG – linha CWM:
-- CWM09 a CWM150 (corrente AC-3)
-- Sufixo bobina: -11 (NA+NF integrado), código completo inclui tensão
-- Exemplo: CWM40-11-30V04 = 40A, 1NA+1NF, bobina 220V 50/60Hz
+WEG – linhas de contatores:
+**CWM** (linha principal, frame compacto): CWM09 a CWM150 (corrente AC-3)
+**CWB** (linha frame B, construção robusta): CWB9 a CWB630 — linha ATUAL e VÁLIDA na lista de preços WEG 2026
+**CWL** (linha L, versão específica): também disponível no banco
+- Sufixo bobina: -11 (1NA+1NF integrado), -10 (1NA), código inclui tensão
+- Exemplo CWM: CWM40-11-30V04 = 40A, 1NA+1NF, bobina 220V
+- Exemplo CWB: CWB25-11-30V23 = 25A, 1NA+1NF, bobina 220V
+REGRA: se o cliente especificou CWB, buscar familia=CWB no banco. NAO substituir CWB por CWM automaticamente.
+Se nao encontrar CWB equivalente, ENTAO sugerir CWM com observacao explicando a substituicao.
+
+**BOBINAS DE REPOSICAO CA para CWB (familia BRB):**
+Para pedidos de bobina de reposicao CA para contator CWB, usar a tabela abaixo:
+- BRB-38 (para CWB/CWBS 9 a 38A):  24V=12243117 | 110V=12243218 | 220V=12243219 | 380V=12243220
+- BRB-80 (para CWB/CWBS 40 a 80A): 24V=13909651 | 110V=13909653 | 220V=13719665 | 380V=13909676
+- BRB-110 (para CWB 95 a 110A):    24V=15258080  | 110V=15233680 | 220V=15233679 | 380V=15258091
+Identificar o tamanho do contator pela corrente nominal e selecionar o BRB correspondente.
+Retornar referencia_weg=BRB-XX e codigo_weg=SAP da tensao solicitada.
+NAO dizer que bobinas CWB sao fornecidas sob consulta — os codigos SAP estao na tabela acima.
 
 ### C. RELÉS DE SOBRECARGA (Overload Relays)
 Concorrentes: Siemens 3RU2 | Schneider LRD | ABB TA25DU, TA75DU | Eaton ZB
