@@ -63,9 +63,10 @@ def buscar_produto_weg(familia=None, corrente_min=None, corrente_max=None,
 
         # Busca direta por codigo SAP — para produtos WEG ja identificados
         if codigo_exato:
+            sap = str(codigo_exato).strip()
             cursor.execute(
-                "SELECT TOP 5 * FROM weg_produtos WHERE codigo = %s",
-                [str(codigo_exato).strip()]
+                "SELECT TOP 5 * FROM weg_produtos WHERE sap_code = %s OR sap_alt = %s",
+                [sap, sap]
             )
             rows = cursor.fetchall()
             conn.close()
