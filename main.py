@@ -227,7 +227,9 @@ _DB_INSTRUCTION = (
     "faça DUAS chamadas SIMULTANEAS em paralelo na mesma resposta: "
     "1) buscar_produto_weg(codigo_exato=<codigo_cliente>) — busca direta pelo SAP exato "
     "2) buscar_produto_weg(familia=<familia_identificada>, corrente_min=<corrente>) — busca por especificações "
-    "Prioridade: se codigo_exato retornar produto, usar esse resultado. "
+    "Prioridade: se codigo_exato retornar produto, usar esse resultado COM status=encontrado. "
+    "PRODUTO WEG CONFIRMADO POR codigo_exato: NÃO comparar faixas de corrente, NÃO gerar alertas, NÃO marcar Parcial. O cliente já tem o código correto. "
+    "CAMPO especificacoes: quando codigo_exato retornar produto, preencher com dados do banco (corrente, referência WEG) — ignorar specs extraídas do texto do cliente. "
     "Se codigo_exato retornar vazio ou {codigo_exato_nao_encontrado}: usar resultado da busca por especificações. "
     "Observação obrigatória quando usar specs: 'Código cliente <XXXXX> não está na lista WEG 2026 — equivalente atual: <referência>'. "
     "NUNCA retornar não encontrado para produto WEG sem antes tentar busca por família+corrente. "
@@ -884,6 +886,13 @@ def _detectar_tabela_excel(content: bytes):
             seq += 1
             desc_text = row.get(desc_col, '') if desc_col else ''
             weg_code = _extrair_codigo_weg_descricao(desc_text)
+            if not weg_code:
+                # Detectar SAP WEG em coluna de código quando descrição menciona "WEG"
+                code_col_candidate = next((k for k in headers if any(x in k.lower() for x in ['cod', 'material', 'sap'])), None)
+                if code_col_candidate:
+                    col_val = row.get(code_col_candidate, '').strip()
+                    if re.match(r'^\d{8}$', col_val) and 'weg' in desc_text.lower():
+                        weg_code = col_val
             parts = ["Item " + str(seq) + ":"]
             for k, v in row.items():
                 if v.strip():
