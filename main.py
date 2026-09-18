@@ -53,16 +53,42 @@ def get_conn():
     )
 
 
-def buscar_produto_weg(familia, corrente_min=None, corrente_max=None,
+def buscar_produto_weg(familia=None, corrente_min=None, corrente_max=None,
                        tensao_v=None, potencia_kvar=None, potencia_kw=None,
-                       potencia_cv=None, texto_livre=None):
+                       potencia_cv=None, texto_livre=None, codigo_exato=None):
     """Consulta weg_produtos no Azure SQL e retorna JSON string."""
     try:
         conn = get_conn()
         cursor = conn.cursor(as_dict=True)
 
-        clauses = ["ativo = 1", "familia = %s"]
-        params = [familia]
+        # Busca direta por codigo SAP — para produtos WEG ja identificados
+        if codigo_exato:
+            cursor.execute(
+                "SELECT TOP 5 * FROM weg_produtos WHERE codigo = %s",
+                [str(codigo_exato).strip()]
+            )
+            rows = cursor.fetchall()
+            conn.close()
+            result = []
+            for row in rows:
+                clean = {}
+                for k, v in row.items():
+                    if v is None:
+                        clean[k] = None
+                    elif hasattr(v, "isoformat"):
+                        clean[k] = v.isoformat()
+                    elif hasattr(v, "__float__") and not isinstance(v, (int, str, bool)):
+                        clean[k] = float(v)
+                    else:
+                        clean[k] = v
+                result.append(clean)
+            return json.dumps(result, ensure_ascii=False)
+
+        clauses = ["ativo = 1"]
+        params = []
+        if familia:
+            clauses.append("familia = %s")
+            params.append(familia)
 
         if corrente_min is not None:
             clauses.append("corrente_max >= %s")
@@ -174,8 +200,12 @@ TOOLS = [
                     "type": "string",
                     "description": "Busca por texto no código, subtipo ou observações do produto",
                 },
+                "codigo_exato": {
+                    "type": "string",
+                    "description": "Código SAP WEG exato (8 dígitos) para busca direta. Use quando o cliente já forneceu o código WEG. Dispensa o campo familia.",
+                },
             },
-            "required": ["familia"],
+            "required": [],
         },
     }
 ]
@@ -187,9 +217,10 @@ _DB_INSTRUCTION = (
     "Nunca responda sem consultar o banco — os dados não estão no contexto, estão no banco. "
     "REGRA CRÍTICA DO SAP CODE: o campo codigo_weg DEVE conter o código SAP de 8 dígitos numéricos. "
     "Esse código SÓ existe no banco de dados — nunca invente ou omita. "
-    "MESMO para itens que já são WEG (fabricante=WEG na lista do cliente), consulte o banco para obter o SAP code. "
-    "Para produtos WEG já identificados: chame buscar_produto_weg(familia=<família>, texto_livre=<referência>) "
-    "para recuperar o código SAP e o preço de lista do banco. "
+    "REGRA CODIGO WEG JA CONHECIDO: quando o cliente já forneceu o código SAP WEG (fabricante=WEG, código numérico), "
+    "chame buscar_produto_weg(codigo_exato=<codigo_cliente>) para recuperar dados do banco — NAO tente reidentificar "
+    "o produto pela descrição, pois isso causa erros. O codigo_exato retorna o produto exato sem ambiguidade. "
+    "MESMO para itens que já são WEG, consulte o banco com codigo_exato para obter preço de lista atualizado. "
     "Famílias disponíveis: CWM, CWMC, CWB, CWBS, CWBC, CWL, CWC0, RW, RWM, RWL, MPW, MWL, PDW, PDWM, "
     "CFW100, CFW300, CFW500, CFW501, CFW11, CFW900, SSW05, SSW07, SSW08, SSW900, "
     "UCW, UCWT, MCW, BCW, BCWA, BTW, CBW3, CDW, ACW, ABW, ABWC, VBW, DWA, DWB, DWP, "
