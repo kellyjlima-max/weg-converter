@@ -1141,3 +1141,34 @@ async def export(request: Request):
     )
 
 
+
+
+# ─── Admin: executar SQL direto no banco (migration) ─────────────────────────
+class AdminSqlInput(BaseModel):
+    token: str
+    sql: str
+
+@app.post("/admin/run-sql")
+async def admin_run_sql(body: AdminSqlInput):
+    """Executa SQL arbitrário no banco — protegido por token."""
+    if body.token != "weg-migration-2026":
+        raise HTTPException(status_code=403, detail="Token inválido")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Executa cada statement separado por GO ou ponto-e-vírgula de bloco
+        cursor.execute(body.sql)
+        rows = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+        # Conta produtos ativos
+        conn2 = get_db_connection()
+        c2 = conn2.cursor()
+        c2.execute("SELECT COUNT(*) FROM weg_produtos WHERE ativo=1")
+        ativos = c2.fetchone()[0]
+        c2.close()
+        conn2.close()
+        return {"ok": True, "rows_affected": rows, "produtos_ativos": ativos}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
