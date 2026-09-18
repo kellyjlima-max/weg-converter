@@ -872,7 +872,7 @@ def _detectar_tabela_excel(content: bytes):
         rows_data = []
         for row in all_rows[header_row_idx + 1:]:
             if any(v is not None and str(v).strip() for v in row):
-                rows_data.append({headers[j]: (str(v).strip() if v is not None else '') for j, v in enumerate(row)})
+                rows_data.append({headers[j]: ((str(int(v)) if isinstance(v, float) and v == int(v) else str(v).strip()) if v is not None else '') for j, v in enumerate(row)})
 
         if not rows_data:
             return None
@@ -891,7 +891,10 @@ def _detectar_tabela_excel(content: bytes):
                 code_col_candidate = next((k for k in headers if any(x in k.lower() for x in ['cod', 'material', 'sap'])), None)
                 if code_col_candidate:
                     col_val = row.get(code_col_candidate, '').strip()
-                    if re.match(r'^\d{8}$', col_val) and 'weg' in desc_text.lower():
+                    fab_col2 = next((k for k in headers if any(x in k.lower() for x in ['fab', 'marc', 'brand', 'fornec', 'manuf'])), None)
+                    fab_val2 = row.get(fab_col2, '').lower() if fab_col2 else ''
+                    is_weg_row = 'weg' in desc_text.lower() or 'weg' in fab_val2
+                    if re.match(r'^\\d{8}$', col_val) and is_weg_row:
                         weg_code = col_val
             parts = ["Item " + str(seq) + ":"]
             for k, v in row.items():
