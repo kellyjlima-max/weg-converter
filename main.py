@@ -1154,7 +1154,7 @@ async def admin_run_sql(body: AdminSqlInput):
     if body.token != "weg-migration-2026":
         raise HTTPException(status_code=403, detail="Token inválido")
     try:
-        conn = get_db_connection()
+        conn = get_conn()
         cursor = conn.cursor()
         # Executa cada statement separado por GO ou ponto-e-vírgula de bloco
         cursor.execute(body.sql)
@@ -1163,7 +1163,7 @@ async def admin_run_sql(body: AdminSqlInput):
         cursor.close()
         conn.close()
         # Conta produtos ativos
-        conn2 = get_db_connection()
+        conn2 = get_conn()
         c2 = conn2.cursor()
         c2.execute("SELECT COUNT(*) FROM weg_produtos WHERE ativo=1")
         ativos = c2.fetchone()[0]
