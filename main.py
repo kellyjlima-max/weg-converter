@@ -69,21 +69,26 @@ def buscar_produto_weg(familia=None, corrente_min=None, corrente_max=None,
                 [sap, sap]
             )
             rows = cursor.fetchall()
+            if rows:
+                conn.close()
+                result = []
+                for row in rows:
+                    clean = {}
+                    for k, v in row.items():
+                        if v is None:
+                            clean[k] = None
+                        elif hasattr(v, "isoformat"):
+                            clean[k] = v.isoformat()
+                        elif hasattr(v, "__float__") and not isinstance(v, (int, str, bool)):
+                            clean[k] = float(v)
+                        else:
+                            clean[k] = v
+                    result.append(clean)
+                return json.dumps(result, ensure_ascii=False)
+            # Codigo nao encontrado no banco — sinalizar para busca por familia+specs
             conn.close()
-            result = []
-            for row in rows:
-                clean = {}
-                for k, v in row.items():
-                    if v is None:
-                        clean[k] = None
-                    elif hasattr(v, "isoformat"):
-                        clean[k] = v.isoformat()
-                    elif hasattr(v, "__float__") and not isinstance(v, (int, str, bool)):
-                        clean[k] = float(v)
-                    else:
-                        clean[k] = v
-                result.append(clean)
-            return json.dumps(result, ensure_ascii=False)
+            return json.dumps({"codigo_exato_nao_encontrado": sap,
+                               "instrucao": "Codigo SAP nao esta na base 2026. Buscar equivalente por familia e especificacoes."})
 
         clauses = ["ativo = 1"]
         params = []
@@ -218,10 +223,13 @@ _DB_INSTRUCTION = (
     "Nunca responda sem consultar o banco — os dados não estão no contexto, estão no banco. "
     "REGRA CRÍTICA DO SAP CODE: o campo codigo_weg DEVE conter o código SAP de 8 dígitos numéricos. "
     "Esse código SÓ existe no banco de dados — nunca invente ou omita. "
-    "REGRA CODIGO WEG JA CONHECIDO: quando o cliente já forneceu o código SAP WEG (fabricante=WEG, código numérico), "
-    "chame buscar_produto_weg(codigo_exato=<codigo_cliente>) para recuperar dados do banco — NAO tente reidentificar "
-    "o produto pela descrição, pois isso causa erros. O codigo_exato retorna o produto exato sem ambiguidade. "
-    "MESMO para itens que já são WEG, consulte o banco com codigo_exato para obter preço de lista atualizado. "
+    "REGRA CODIGO WEG JA CONHECIDO: quando o cliente já forneceu o código SAP WEG (fabricante=WEG, código numérico de 8 dígitos), "
+    "SEMPRE chame primeiro buscar_produto_weg(codigo_exato=<codigo_cliente>). "
+    "SE retornar produto: usar os dados retornados (SAP, referência, preço). "
+    "SE retornar {codigo_exato_nao_encontrado}: o código é legítimo WEG mas não está na lista 2026. "
+    "Nesse caso, fazer SEGUNDA busca por familia + corrente/tensao para encontrar o equivalente atual. "
+    "Se o equivalente for encontrado: retornar o equivalente com observacao 'Código cliente: XXXXX — equivalente WEG 2026'. "
+    "NUNCA retornar não encontrado sem tentar a busca por família primeiro. "
     "Famílias disponíveis: CWM, CWMC, CWB, CWBS, CWBC, CWL, CWC0, RW, RWM, RWL, MPW, MWL, PDW, PDWM, "
     "CFW100, CFW300, CFW500, CFW501, CFW11, CFW900, SSW05, SSW07, SSW08, SSW900, "
     "UCW, UCWT, MCW, BCW, BCWA, BTW, CBW3, CDW, ACW, ABW, ABWC, VBW, DWA, DWB, DWP, "
