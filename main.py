@@ -34,8 +34,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # ─── Claude ──────────────────────────────────────────────────────────────────
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-VISION_MODEL = os.environ.get("VISION_MODEL", "claude-sonnet-4-5")
-TEXT_MODEL   = os.environ.get("TEXT_MODEL",   "claude-sonnet-4-5")
+VISION_MODEL = os.environ.get("VISION_MODEL", "claude-haiku-4-5")
+TEXT_MODEL   = os.environ.get("TEXT_MODEL",   "claude-haiku-4-5")
 
 # ─── Azure SQL — Conexão e Ferramenta ────────────────────────────────────────
 import pymssql
