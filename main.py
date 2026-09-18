@@ -241,26 +241,43 @@ WEG – linha MPW:
 - Acessórios WEG: CW1 (contato NA), CW2 (contato NF), BST (bobina shunt), BVM (mínima tensão)
 - Indicar sempre código base + códigos de acessórios separados
 
-### A2. DISJUNTORES RESIDENCIAIS E INDUSTRIAIS (MDWP / MDWH / MDWS)
+### A2. DISJUNTORES TERMOMAGNETICOS MDWP (Minidisjuntores)
 Concorrentes: Siemens 5SL | Schneider iC60, C60N, Acti9 | ABB S200, SH200 | Eaton | Hager
 
-Familias WEG:
-- **MDWP**: linha principal de disjuntores termomagneticos
-- **MDWH**: disjuntores de alta capacidade de ruptura
-- **MDWS**: disjuntores com diferencial (RCCB integrado)
+**REGRA CRITICA MDWP: O banco de dados contem apenas MONOPOLARES (sem sufixo de polos).**
+**NUNCA retornar o codigo do banco para MDWP quando cliente especificar 2, 3 ou 4 polos.**
+**Usar EXCLUSIVAMENTE a tabela abaixo para obter o SAP correto conforme curva + amperes + polos.**
 
-Parametros criticos:
-- Corrente nominal (A): 6, 10, 16, 20, 25, 32, 40, 50, 63 A...
-- Numero de polos: Unipolar (1P), Bipolar (2P / B), Tripolar (3P / T), Tetrapolar (4P)
-- Curva de disparo: B (residencial), C (uso geral), D (industrial/motores)
-- Capacidade de ruptura (kA): 3, 4,5, 6, 10 kA
+Parametros para identificacao: curva (B=residencial / C=uso geral), corrente (A), polos (1=mono / 2=bi / 3=tri / 4=tetra)
+Formato referencia: MDWP-{curva}{corrente}-{polos}  (monopolar omite o sufixo de polos)
 
-**REGRA BIPOLAR 25A — SAP CONFIRMADO:**
-Quando o cliente especificar disjuntor bipolar de 25A (MDWP, MDWH ou similar):
-- referencia_weg = MDWP-B25-2
-- codigo_weg = 15265897
-- status = encontrado (SAP confirmado — nao consultar banco para este item especifico)
-Para outros amperagens/polos: buscar_produto_weg(familia="MDWP", texto_livre="<amperagem> <polos>").
+**TABELA MDWP MONOPOLARES (1 polo):**
+MDWP-B2=15265839 | MDWP-B4=15265840 | MDWP-B6=15265841 | MDWP-B10=15265843 | MDWP-B16=15265844
+MDWP-B20=15265845 | MDWP-B25=15265846 | MDWP-B32=15265847 | MDWP-B40=15265888 | MDWP-B50=15265890 | MDWP-B63=15265891
+MDWP-C2=15265508 | MDWP-C4=15265514 | MDWP-C6=15265637 | MDWP-C10=15220827 | MDWP-C16=15265681
+MDWP-C20=15265683 | MDWP-C25=15265685 | MDWP-C32=15265689 | MDWP-C40=15265691 | MDWP-C50=15265692 | MDWP-C63=15265694
+
+**TABELA MDWP BIPOLARES (2 polos, sufixo -2):**
+MDWP-B2-2=15265892 | MDWP-B4-2=15265893 | MDWP-B6-2=15265894 | MDWP-B10-2=15265895 | MDWP-B16-2=15265896
+MDWP-B20-2=15267246 | MDWP-B25-2=15265897 | MDWP-B32-2=15265908 | MDWP-B40-2=15265909 | MDWP-B50-2=15265910 | MDWP-B63-2=15265911
+MDWP-C2-2=15265696 | MDWP-C4-2=15265718 | MDWP-C6-2=15265720 | MDWP-C10-2=15265721 | MDWP-C16-2=15265722
+MDWP-C20-2=15265723 | MDWP-C25-2=15265725 | MDWP-C32-2=15265726 | MDWP-C40-2=15265727 | MDWP-C50-2=15265739 | MDWP-C63-2=15265740
+
+**TABELA MDWP TRIPOLARES (3 polos, sufixo -3):**
+MDWP-B2-3=15265912 | MDWP-B4-3=15265913 | MDWP-B6-3=15265914 | MDWP-B10-3=15265915 | MDWP-B16-3=15265916
+MDWP-B20-3=15265917 | MDWP-B25-3=15265938 | MDWP-B32-3=15265939 | MDWP-B40-3=15265941 | MDWP-B50-3=15265942 | MDWP-B63-3=15265943
+MDWP-C2-3=15265741 | MDWP-C4-3=15265743 | MDWP-C6-3=15265744 | MDWP-C10-3=15265745 | MDWP-C16-3=15265747
+MDWP-C20-3=15265760 | MDWP-C25-3=15265762 | MDWP-C32-3=15265763 | MDWP-C40-3=15265764 | MDWP-C50-3=15265766 | MDWP-C63-3=15265767
+
+**TABELA MDWP TETRAPOLARES (4 polos, sufixo -4) — apenas curva C:**
+MDWP-C2-4=15265788 | MDWP-C4-4=15265789 | MDWP-C6-4=15265790 | MDWP-C10-4=15265791 | MDWP-C16-4=15265792
+MDWP-C20-4=15265793 | MDWP-C25-4=15265794 | MDWP-C32-4=15265795 | MDWP-C40-4=15265796 | MDWP-C50-4=15265797 | MDWP-C63-4=15265838
+
+Logica de matching MDWP:
+1. Identificar curva (B ou C), corrente (A) e numero de polos (1/2/3/4) da descricao do cliente
+2. Consultar tabela acima e retornar o SAP exato — NAO consultar banco
+3. status = "encontrado" quando curva + corrente + polos baterem exatamente
+4. Se curva nao for especificada e for uso industrial/motor: assumir C. Se residencial: assumir B.
 
 ==========================================================================
 ### B. CONTATORES (Contactors)
