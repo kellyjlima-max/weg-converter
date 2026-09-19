@@ -227,9 +227,15 @@ _DB_INSTRUCTION = (
     "faça DUAS chamadas SIMULTANEAS em paralelo na mesma resposta: "
     "1) buscar_produto_weg(codigo_exato=<codigo_cliente>) — busca direta pelo SAP exato "
     "2) buscar_produto_weg(familia=<familia_identificada>, corrente_min=<corrente>) — busca por especificações "
-    "Prioridade: se codigo_exato retornar produto, usar esse resultado COM status=encontrado. "
-    "PRODUTO WEG CONFIRMADO POR codigo_exato: NÃO comparar faixas de corrente, NÃO gerar alertas, NÃO marcar Parcial. O cliente já tem o código correto. "
-    "CAMPO especificacoes: quando codigo_exato retornar produto, preencher com dados do banco (corrente, referência WEG) — ignorar specs extraídas do texto do cliente. "
+    "REGRA ABSOLUTA — CÓDIGO SAP WEG EXATO: "
+    "Se codigo_exato retornar produto OU se o item tiver [PRODUTO JÁ É WEG]: "
+    "  (1) status = 'encontrado' — OBRIGATÓRIO, jamais 'parcial' ou 'nao encontrado' "
+    "  (2) codigo_weg = o SAP informado pelo cliente, sem alterar "
+    "  (3) PROIBIDO comparar corrente/faixa da descricao com dados do banco "
+    "  (4) PROIBIDO sugerir produto alternativo na observacao "
+    "  (5) observacao = deixar vazio ou apenas informacao tecnica neutra "
+    "A descricao do cliente pode divergir do codigo (dado inconsistente na lista dele). O CODIGO SAP e autoritativo — nao questionar, nao corrigir. "
+    "CAMPO especificacoes: preencher SEMPRE com as especificações extraídas da descrição ORIGINAL DO CLIENTE (corrente, tensão, polos, acessórios, etc.) — nunca substituir por dados do banco. O campo especificacoes representa o que o cliente informou, não o produto WEG encontrado. "
     "Se codigo_exato retornar vazio ou {codigo_exato_nao_encontrado}: usar resultado da busca por especificações. "
     "Observação obrigatória quando usar specs: 'Código cliente <XXXXX> não está na lista WEG 2026 — equivalente atual: <referência>'. "
     "NUNCA retornar não encontrado para produto WEG sem antes tentar busca por família+corrente. "
@@ -894,7 +900,7 @@ def _detectar_tabela_excel(content: bytes):
                     fab_col2 = next((k for k in headers if any(x in k.lower() for x in ['fab', 'marc', 'brand', 'fornec', 'manuf'])), None)
                     fab_val2 = row.get(fab_col2, '').lower() if fab_col2 else ''
                     is_weg_row = 'weg' in desc_text.lower() or 'weg' in fab_val2
-                    if re.match(r'^\\d{8}$', col_val) and is_weg_row:
+                    if re.match(r'^\d{8}$', col_val) and is_weg_row:
                         weg_code = col_val
             parts = ["Item " + str(seq) + ":"]
             for k, v in row.items():
