@@ -41,16 +41,26 @@ TEXT_MODEL   = os.environ.get("TEXT_MODEL",   "claude-haiku-4-5")
 import pymssql
 
 
-def get_conn():
-    return pymssql.connect(
-        server=os.environ["AZURE_SQL_SERVER"],
-        user=os.environ["AZURE_SQL_USER"],
-        password=os.environ["AZURE_SQL_PASSWORD"],
-        database=os.environ["AZURE_SQL_DB"],
-        login_timeout=10,
-        timeout=30,
-        charset="UTF-8",
-    )
+def get_conn(retries=3, delay=2):
+    """Conecta ao Azure SQL com retry para lidar com hibernacao do banco."""
+    import time
+    last_err = None
+    for attempt in range(retries):
+        try:
+            return pymssql.connect(
+                server=os.environ["AZURE_SQL_SERVER"],
+                user=os.environ["AZURE_SQL_USER"],
+                password=os.environ["AZURE_SQL_PASSWORD"],
+                database=os.environ["AZURE_SQL_DB"],
+                login_timeout=15,
+                timeout=30,
+                charset="UTF-8",
+            )
+        except Exception as e:
+            last_err = e
+            if attempt < retries - 1:
+                time.sleep(delay)
+    raise last_err
 
 
 def buscar_produto_weg(familia=None, corrente_min=None, corrente_max=None,
