@@ -658,6 +658,7 @@ _CACHED_SYSTEM = [
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".bmp", ".tiff", ".tif"}
 EXCEL_EXTS = {".xlsx", ".xls"}
 CSV_EXTS   = {".csv"}
+PDF_EXTS   = {".pdf"}
 
 MEDIA_TYPES = {
     ".png": "image/png", ".gif": "image/gif", ".webp": "image/webp",
@@ -952,6 +953,35 @@ def process_csv(content: bytes) -> dict:
     return call_claude_text(df.to_string(index=False), "CSV")
 
 
+
+def process_pdf(content: bytes) -> dict:
+    """Extrai tabelas/texto de PDF e envia para conversão WEG."""
+    try:
+        import pdfplumber
+    except ImportError:
+        raise ValueError("Biblioteca pdfplumber nao instalada. Contate o suporte.")
+
+    lines_out = []
+    with pdfplumber.open(io.BytesIO(content)) as pdf:
+        for page in pdf.pages:
+            tables = page.extract_tables()
+            if tables:
+                for table in tables:
+                    for row in table:
+                        if row and any(cell for cell in row if cell):
+                            cleaned = [str(cell or "").strip().replace("\n", " ") for cell in row]
+                            lines_out.append(" | ".join(cleaned))
+            else:
+                text = page.extract_text()
+                if text and text.strip():
+                    lines_out.append(text.strip())
+
+    if not lines_out:
+        raise ValueError("Nao foi possivel extrair conteudo do PDF. Verifique se o arquivo nao esta protegido.")
+
+    conteudo = "\n".join(lines_out)
+    return call_claude_text(conteudo, "PDF (pedido/cotacao)")
+
 # ─── Excel generator ──────────────────────────────────────────────────────────
 WEG_BLUE   = "00205B"
 WEG_GREEN  = "00853D"
@@ -1130,10 +1160,12 @@ async def convert(file: UploadFile = File(...)):
             result = process_excel(content)
         elif ext in CSV_EXTS:
             result = process_csv(content)
+        elif ext in PDF_EXTS:
+            result = process_pdf(content)
         else:
             raise HTTPException(
                 status_code=400,
-                detail="Formato '" + (ext or name) + "' não suportado. Use imagem (JPG, PNG, HEIC) ou planilha (XLSX, CSV).",
+                detail="Formato '" + (ext or name) + "' não suportado. Use imagem (JPG, PNG, HEIC), planilha (XLSX, CSV) ou PDF.",
             )
     except HTTPException:
         raise
