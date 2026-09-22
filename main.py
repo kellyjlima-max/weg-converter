@@ -1204,20 +1204,33 @@ async def export(request: Request):
 
 
 # ─── Admin: executar SQL direto no banco (migration) ─────────────────────────
+from typing import Optional
+
 class AdminSqlInput(BaseModel):
     token: str
-    sql: str
+    sql: Optional[str] = None
+    sql_b64: Optional[str] = None
 
 @app.post("/admin/run-sql")
 async def admin_run_sql(body: AdminSqlInput):
-    """Executa SQL arbitrário no banco — protegido por token."""
+    """Executa SQL arbitrário no banco — protegido por token.
+    Aceita sql (texto direto) ou sql_b64 (base64-encoded UTF-8).
+    """
     if body.token != "weg-migration-2026":
         raise HTTPException(status_code=403, detail="Token inválido")
+    if body.sql_b64:
+        try:
+            sql_exec = base64.b64decode(body.sql_b64).decode("utf-8")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"sql_b64 inválido: {e}")
+    elif body.sql:
+        sql_exec = body.sql
+    else:
+        raise HTTPException(status_code=400, detail="Forneça sql ou sql_b64")
     try:
         conn = get_conn()
         cursor = conn.cursor()
-        # Executa cada statement separado por GO ou ponto-e-vírgula de bloco
-        cursor.execute(body.sql)
+        cursor.execute(sql_exec)
         rows = cursor.rowcount
         conn.commit()
         cursor.close()
