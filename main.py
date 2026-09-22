@@ -1245,3 +1245,44 @@ async def admin_run_sql(body: AdminSqlInput):
         return {"ok": True, "rows_affected": rows, "produtos_ativos": ativos}
     except Exception as e:
         return {"ok": False, "error": str(e)}
+
+
+@app.post("/admin/query-sql")
+async def admin_query_sql(body: AdminSqlInput):
+    """Executa SELECT e retorna as linhas como lista — protegido por token."""
+    if body.token != "weg-migration-2026":
+        raise HTTPException(status_code=403, detail="Token inválido")
+    if body.sql_b64:
+        try:
+            sql_exec = base64.b64decode(body.sql_b64).decode("utf-8")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"sql_b64 inválido: {e}")
+    elif body.sql:
+        sql_exec = body.sql
+    else:
+        raise HTTPException(status_code=400, detail="Forneça sql ou sql_b64")
+    try:
+        conn = get_conn()
+        cursor = conn.cursor(as_dict=True)
+        cursor.execute(sql_exec)
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        # Serializa Decimal e datetime
+        import decimal, datetime
+        clean_rows = []
+        for row in rows:
+            clean = {}
+            for k, v in row.items():
+                if v is None:
+                    clean[k] = None
+                elif isinstance(v, decimal.Decimal):
+                    clean[k] = float(v)
+                elif isinstance(v, (datetime.date, datetime.datetime)):
+                    clean[k] = v.isoformat()
+                else:
+                    clean[k] = v
+            clean_rows.append(clean)
+        return {"ok": True, "count": len(clean_rows), "rows": clean_rows}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
