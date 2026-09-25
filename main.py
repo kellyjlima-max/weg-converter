@@ -34,8 +34,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # ─── Claude ──────────────────────────────────────────────────────────────────
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-VISION_MODEL = os.environ.get("VISION_MODEL", "claude-haiku-4-5")
-TEXT_MODEL   = os.environ.get("TEXT_MODEL",   "claude-haiku-4-5")
+VISION_MODEL = os.environ.get("VISION_MODEL", "claude-sonnet-4-5")
+TEXT_MODEL   = os.environ.get("TEXT_MODEL",   "claude-sonnet-4-5")
 
 # ─── Azure SQL — Conexão e Ferramenta ────────────────────────────────────────
 import pymssql
@@ -65,18 +65,57 @@ def get_conn(retries=3, delay=2):
 
 def buscar_produto_weg(familia=None, corrente_min=None, corrente_max=None,
                        tensao_v=None, potencia_kvar=None, potencia_kw=None,
-                       potencia_cv=None, texto_livre=None, codigo_exato=None):
+                       potencia_cv=None, texto_livre=None, codigo_exato=None, referencia=None):
     """Consulta weg_produtos no Azure SQL e retorna JSON string."""
     try:
         conn = get_conn()
         cursor = conn.cursor(as_dict=True)
 
+        # Busca direta pela REFERENCIA WEG (ex: CWL18-10-30D23, QDW02-4-FS, MDW-C25-2)
+        # Normaliza (sem hifen/espaco/ponto, maiusculo). 1o exato, depois prefixo. Ignora familia.
+        if referencia:
+            norm = re.sub(r"[^A-Z0-9]", "", str(referencia).upper())
+            expr = "REPLACE(REPLACE(REPLACE(UPPER(codigo),'-',''),' ',''),'.','')"
+            cursor.execute(
+                "SELECT TOP 30 * FROM weg_produtos WHERE ativo = 1 AND " + expr + " = %s ORDER BY codigo",
+                [norm],
+            )
+            rows = cursor.fetchall()
+            tipo = "exato"
+            if not rows and len(norm) >= 4:
+                cursor.execute(
+                    "SELECT TOP 30 * FROM weg_produtos WHERE ativo = 1 AND " + expr + " LIKE %s ORDER BY codigo",
+                    [norm + "%"],
+                )
+                rows = cursor.fetchall()
+                tipo = "prefixo"
+            conn.close()
+            result = []
+            for row in rows:
+                clean = {}
+                for k, v in row.items():
+                    if v is None:
+                        clean[k] = None
+                    elif hasattr(v, "isoformat"):
+                        clean[k] = v.isoformat()
+                    elif hasattr(v, "__float__") and not isinstance(v, (int, str, bool)):
+                        clean[k] = float(v)
+                    else:
+                        clean[k] = v
+                result.append(clean)
+            if not result:
+                return json.dumps({"referencia_nao_encontrada": referencia,
+                                   "instrucao": "Referencia nao esta no banco. Tente texto_livre com o prefixo da familia "
+                                                "(ex: 'CWL32', 'QDW02-8') antes de concluir. NUNCA trocar de linha nem chamar de concorrente."},
+                                  ensure_ascii=False)
+            return json.dumps({"tipo_match": tipo, "produtos": result}, ensure_ascii=False)
+
         # Busca direta por codigo SAP — para produtos WEG ja identificados
         if codigo_exato:
             sap = str(codigo_exato).strip()
             cursor.execute(
-                "SELECT TOP 5 * FROM weg_produtos WHERE sap_code = %s OR sap_alt = %s",
-                [sap, sap]
+                "SELECT TOP 5 * FROM weg_produtos WHERE sap_code = %s OR sap_alt = %s OR sap_alt LIKE %s",
+                [sap, sap, "%" + sap + "%"]
             )
             rows = cursor.fetchall()
             if rows:
@@ -216,6 +255,15 @@ TOOLS = [
                     "type": "string",
                     "description": "Busca por texto no código, subtipo ou observações do produto",
                 },
+                "referencia": {
+                    "type": "string",
+                    "description": (
+                        "Referencia WEG completa como o cliente escreveu (ex: 'CWL18-10-30D23', 'BRL-32 D33', "
+                        "'PDW02-3V40', 'MWL18-3-U010', 'DWP125L-125-3', 'QDW02-12-FS', 'CFW300A02P6T4NB20'). "
+                        "Use SEMPRE que a descricao do cliente contiver uma referencia WEG — dispensa familia. "
+                        "Busca exata normalizada e, se nao achar, por prefixo."
+                    ),
+                },
                 "codigo_exato": {
                     "type": "string",
                     "description": "Código SAP WEG exato (8 dígitos) para busca direta. Use quando o cliente já forneceu o código WEG. Dispensa o campo familia.",
@@ -247,7 +295,11 @@ _DB_INSTRUCTION = (
     "A descricao do cliente pode divergir do codigo (dado inconsistente na lista dele). O CODIGO SAP e autoritativo — nao questionar, nao corrigir. "
     "CAMPO especificacoes: preencher SEMPRE com as especificações extraídas da descrição ORIGINAL DO CLIENTE (corrente, tensão, polos, acessórios, etc.) — nunca substituir por dados do banco. O campo especificacoes representa o que o cliente informou, não o produto WEG encontrado. "
     "Se codigo_exato retornar vazio ou {codigo_exato_nao_encontrado}: usar resultado da busca por especificações. "
-    "Observação obrigatória quando usar specs: 'Código cliente <XXXXX> não está na lista WEG 2026 — equivalente atual: <referência>'. "
+    "Observação quando o SAP do cliente for de fato obsoleto (não achado por codigo_exato NEM por referencia): 'Código cliente <XXXXX> não está na lista WEG 2026 — equivalente atual: <referência>'. "
+    "REGRA REFERENCIA WEG NA DESCRICAO: se a descrição do cliente contém referência WEG (CWL18-10-30D23, BRL32D33, PDW02-3V40, MWL18-3-U010, DWP125, QDW02, CFW300, MDW...) "
+    "ou vier marcada [REFERENCIA WEG NA DESCRICAO], chame buscar_produto_weg(referencia=<referencia>) — o item É WEG, fabricante='WEG', mantenha a MESMA linha. "
+    "Para refs incompletas (ex: 'MDW 25A bifásico', 'DWP125', 'CFW300 1,5CV 380V', 'QDW02 P/12 SOB FUME') use referencia com o prefixo (ex: 'MDW-C25-2', 'DWP125L-125-3', 'QDW02-12-FS') ou texto_livre com o prefixo da família. "
+    "NUNCA marcar 'não encontrado' sem ter tentado referencia E texto_livre com o prefixo. "
     "NUNCA retornar não encontrado para produto WEG sem antes tentar busca por família+corrente. "
     "Famílias disponíveis: CWM, CWMC, CWB, CWBS, CWBC, CWL, CWC0, RW, RWM, RWL, MPW, MWL, PDW, PDWM, "
     "CFW100, CFW300, CFW500, CFW501, CFW11, CFW900, SSW05, SSW07, SSW08, SSW900, "
@@ -269,6 +321,22 @@ Fabricantes concorrentes que você conhece em detalhe: Siemens, ABB, Schneider E
 """
 
 _PROMPT_PART2 = """
+==========================================================================
+## REGRAS DE OURO — PRIORIDADE MÁXIMA (erros reais já cometidos — NUNCA repetir)
+
+G1. NADA de memória: codigo_weg, referencia_weg e preco_lista SOMENTE de resultado da ferramenta. Se não veio do banco, codigo_weg vazio e status 'parcial' com observação 'A CONFIRMAR'. Nunca inventar código, preço ou especificação.
+G2. ITEM JÁ É WEG: famílias CWL, CWM, CWB, CWC, BRL/BRM/BRB (bobinas), BCFL/BCLL, RW, RWM, PDW, PDWM, MPW, MWL, DWP, DWB, DWA, ACW, AGW, MDW, MDWP, MDWS, MDWH, RDW/RDWS/RDWH, SPW, QDW02, TTW01, CFW100/300/500/11, SSW, UCW. Nesses casos fabricante='WEG', MANTER exatamente a linha e a referência pedidas e só buscar SAP e preço. PROIBIDO trocar de linha (CWL→CWM, MWL→MPW, DWP→MDW, CWB→CWM) ou classificar como 'Concorrente'. CWL é linha ATUAL (não foi substituída por CWM).
+G3. Coluna Cód.Fáb./código com 8 dígitos pode ser o próprio SAP WEG (ex.: 14247158 = BRL-32 D33). Sempre testar com codigo_exato primeiro.
+G4. NÃO INVENTAR CARACTERÍSTICAS: 'especificacoes' só com o que o cliente escreveu. Proibido criar 'monofásico', 'canaleta de ventilação', '1NA+1NF', '100kA' etc. 'descricao_weg' vem do banco (campos categoria/subtipo).
+G5. CV ≠ kW. Se o cliente escreveu CV, use potencia_cv; se kW, potencia_kw. 1,5 CV = 1,1 kW; 3 CV = 2,2 kW. Nunca escrever kW quando o cliente disse CV.
+G6. LEIA A SIGLA LETRA POR LETRA: MWL ≠ MWI; sufixos de contator: -10 = 1NA, -01 = 1NF, -00 = sem auxiliar, -11 = 1NA+1NF. Sufixo de bobina: D02=24V, D13=110V, D23=220V, D33=380V — o SAP DEVE ser o da bobina pedida.
+G7. POLOS: 'bifásico'/'2P' = bipolar (sufixo -2); tripolar -3; tetrapolar -4; sem sufixo = monopolar. Ex.: 'MDW 25A bifásico' → MDW-C25-2 (NUNCA MDW-B25 monopolar). 'Disjuntor caixa moldada' = DWP/DWB/ACW/AGW, NUNCA MDW.
+G8. INVERSORES CFW300: existem versões monofásicas 110-127V (S1), 200-240V mono (S2) e mono/tri (B2), trifásicas 200-240V (T2) e 380-415V (T4). Selecione pela potência EM CV na tensão pedida (ex.: 1,5cv 380V → CFW300A02P6T4NB20; 3cv 220V → CFW300B10P0B2DB20). Nunca escolher modelo de potência menor.
+G9. REFERÊNCIA PEDIDA NÃO EXISTE (ex.: CWL32-10 — só há CWL32-00 e CWL32-11): indicar a opção superior que atende (CWL32-11) e na observação a alternativa com SAP; status 'parcial'.
+G10. ATRIBUTO NÃO INFORMADO (curva do minidisjuntor, tipo do DR AC/A, cor da tampa do quadro): indicar o padrão (curva C, DR tipo AC — RDWS-AC, tampa conforme descrição) e citar a alternativa na observação; status 'parcial'.
+G11. 'não encontrado' só depois de: codigo_exato (se houver 8 dígitos) + referencia + texto_livre com prefixo da família. Interruptor diferencial WEG = RDWS/RDWH (existe); quadro QDW02 = WEG (existe).
+G12. Conferência final antes de responder: para cada item, a referência WEG tem a mesma família, corrente, tensão (bobina/alimentação), CV, polos e contatos que o pedido do cliente? Se não, corrija.
+
 ==========================================================================
 ## REGRAS GERAIS DE CONVERSÃO
 
@@ -352,7 +420,7 @@ Parâmetros críticos:
 WEG – linhas de contatores:
 **CWM** (linha principal, frame compacto): CWM09 a CWM150 (corrente AC-3)
 **CWB** (linha frame B, construção robusta): CWB9 a CWB630 — linha ATUAL e VÁLIDA na lista de preços WEG 2026
-**CWL** (linha L, versão específica): também disponível no banco
+**CWL** (linha L, ATUAL — manter CWL quando o cliente pedir CWL): no banco com sufixo de bobina, ex.: CWL18-10-30D23 (220V), CWL18-10-30D33 (380V). Bobinas de reposição: BRL-32 D33 etc. Buscar com referencia=<ref completa>.
 - Sufixo bobina: -11 (1NA+1NF integrado), -10 (1NA), código inclui tensão
 - Exemplo CWM: CWM40-11-30V04 = 40A, 1NA+1NF, bobina 220V
 - Exemplo CWB: CWB25-11-30V23 = 25A, 1NA+1NF, bobina 220V
@@ -866,6 +934,47 @@ def _extrair_codigo_weg_descricao(texto: str):
     return matches[-1] if matches else None
 
 
+# Prefixos de familias WEG — se a descricao do cliente contem uma destas referencias, o produto JA E WEG
+_WEG_REF_RE = re.compile(
+    r"\b(?:CWL|CWM|CWMC|CWB|CWBS|CWBC|CWC0?|BRL|BRM|BRB|BCFL|BCLL|BLIML|RW|RWM|RWL|PDWM?|MPW|MWL|DWP|DWB|DWA|"
+    r"ACW|AGW|ABW|MDWP|MDWS|MDWH|MDW|RDWS|RDWH|RDW|SPW|QDW|TTW|CFW|SSW|UCWT?|MCW|BCWA?|FNH|CSW|CEW|AHFW|PFW|CTSW)"
+    r"[0-9A-Z]*(?:[-.,/][0-9A-Z,]+)*(?:\s?D[0-9]{2})?",
+    re.IGNORECASE,
+)
+
+
+def _extrair_refs_weg(texto: str):
+    """Retorna referencias WEG encontradas no texto (ex: 'CWL18-10-30D23', 'BRL32D33', 'QDW02')."""
+    if not texto:
+        return []
+    refs = []
+    for m in _WEG_REF_RE.finditer(str(texto)):
+        r = m.group(0).strip()
+        if len(r) >= 3 and r.upper() not in (x.upper() for x in refs):
+            refs.append(r)
+    return refs
+
+
+def _tags_weg(row_values, desc_text: str):
+    """Monta marcacoes para o modelo: possiveis SAP (8 digitos) e referencias WEG na descricao."""
+    tags = []
+    saps = []
+    for v in row_values:
+        v = str(v).strip()
+        if re.fullmatch(r"0*\d{8}", v):
+            v8 = v.lstrip("0")
+            if len(v8) == 8 and v8 not in saps:
+                saps.append(v8)
+    for sap in saps:
+        tags.append("[POSSIVEL SAP WEG: " + sap + " — chamar buscar_produto_weg(codigo_exato=" + sap + ") ANTES de qualquer outra busca]")
+    refs = _extrair_refs_weg(desc_text)
+    if refs:
+        tags.append("[REFERENCIA WEG NA DESCRICAO: " + " / ".join(refs) + " — PRODUTO JA E WEG: buscar com "
+                    "buscar_produto_weg(referencia=...) e MANTER a mesma linha/referencia; PROIBIDO trocar de familia "
+                    "ou classificar como concorrente]")
+    return tags
+
+
 def _detectar_tabela_excel(content: bytes):
     """Detecta cabeçalho real da tabela e extrai itens com códigos WEG embutidos."""
     try:
@@ -920,6 +1029,7 @@ def _detectar_tabela_excel(content: bytes):
             if weg_code:
                 parts.append("[CÓDIGO SAP WEG NA DESCRIÇÃO: " + weg_code + "]")
                 parts.append("[PRODUTO JÁ É WEG — preencher codigo_weg com este valor; extrair referencia_weg do modelo na descrição; status=encontrado]")
+            parts.extend(_tags_weg(list(row.values()), desc_text or ' '.join(row.values())))
             lines.append(' | '.join(parts))
 
         return '\n'.join(lines) if lines else None
@@ -979,7 +1089,11 @@ def process_pdf(content: bytes) -> dict:
     if not lines_out:
         raise ValueError("Nao foi possivel extrair conteudo do PDF. Verifique se o arquivo nao esta protegido.")
 
-    conteudo = "\n".join(lines_out)
+    marcadas = []
+    for ln in lines_out:
+        tags = _tags_weg(re.split(r"[|\s]+", ln), ln)
+        marcadas.append(ln + ((" " + " ".join(tags)) if tags else ""))
+    conteudo = "\n".join(marcadas)
     return call_claude_text(conteudo, "PDF (pedido/cotacao)")
 
 # ─── Excel generator ──────────────────────────────────────────────────────────
